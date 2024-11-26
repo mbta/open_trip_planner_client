@@ -17,7 +17,9 @@ defmodule OpenTripPlannerClient.MixProject do
       test_coverage: [
         ignore_modules: [
           Mix.Tasks.UpdateFixture,
-          ~r/OpenTripPlannerClient.Schema\./
+          ~r/Jason.Encoder/,
+          ~r/OpenTripPlannerClient.Schema\./,
+          ~r/Nestru/
         ]
       ],
 
