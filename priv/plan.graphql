@@ -73,7 +73,10 @@ query TripPlan(
         }
         to { ...PlaceInfo }
         transitLeg
-        trip { gtfsId }
+        trip {
+	  gtfsId
+	  tripHeadsign
+	}
       }
       numberOfTransfers
       start
