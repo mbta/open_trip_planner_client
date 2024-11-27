@@ -42,7 +42,7 @@ defmodule OpenTripPlannerClient.ErrorTest do
 
       assert origin_message != destination_message
       assert origin_message =~ "is not close enough to any transit stops"
-      assert origin_message =~ "is not close enough to any transit stops"
+      assert destination_message =~ "is not close enough to any transit stops"
       assert message =~ "Location is not close enough to any transit stops"
     end
 

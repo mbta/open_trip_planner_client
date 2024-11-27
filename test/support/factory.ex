@@ -28,9 +28,13 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
       %Plan{
         date: Faker.DateTime.forward(2),
         itineraries: __MODULE__.build_list(3, :itinerary),
-        routing_errors: Faker.Util.pick([__MODULE__.build_list(1, :routing_error), []]),
+        routing_errors: [],
         search_window_used: 3600
       }
+    end
+
+    def plan_with_errors_factory do
+      build(:plan, routing_errors: __MODULE__.build_list(2, :routing_error))
     end
 
     def routing_error_factory do

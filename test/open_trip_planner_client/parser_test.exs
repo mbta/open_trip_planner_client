@@ -2,6 +2,7 @@ defmodule OpenTripPlannerClient.ParserTest do
   use ExUnit.Case, async: true
   import ExUnit.CaptureLog
   import OpenTripPlannerClient.Parser
+  import OpenTripPlannerClient.Test.Support.Factory
 
   describe "validate_body/1" do
     test "handles GraphQL request error" do
@@ -101,23 +102,26 @@ defmodule OpenTripPlannerClient.ParserTest do
       assert log =~ "Exception while fetching data"
     end
 
-    test "handles routing errors" do
-      assert {{:error, error}, log} =
+    test "handles and logs routing errors" do
+      code = "PATH_NOT_FOUND"
+      routing_error = build(:routing_error, code: code)
+
+      assert {{:error, errors}, log} =
                with_log(fn ->
                  validate_body(%{
-                   data: %{plan: %{routing_errors: [%{code: "PATH_NOT_FOUND"}]}}
+                   data: %{plan: %{routing_errors: [routing_error]}}
                  })
                end)
 
-      assert error == [
+      assert [
                %OpenTripPlannerClient.Error{
-                 details: nil,
-                 message: "Something else went wrong.",
+                 details: ^routing_error,
+                 message: "Something went wrong.",
                  type: :routing_error
                }
-             ]
+             ] = errors
 
-      assert log =~ "PATH_NOT_FOUND"
+      assert log =~ code
     end
 
     test "does not treat 'WALKING_BETTER_THAN_TRANSIT' as a fatal error" do

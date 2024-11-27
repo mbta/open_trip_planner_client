@@ -32,6 +32,7 @@ defmodule OpenTripPlannerClient.Error do
 
     for %{code: code, description: description} <- routing_errors do
       %__MODULE__{
+        details: %{code: code, description: description},
         message: code_to_message(code, description, plan),
         type: :routing_error
       }

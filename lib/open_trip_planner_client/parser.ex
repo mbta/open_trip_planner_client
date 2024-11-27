@@ -35,7 +35,7 @@ defmodule OpenTripPlannerClient.Parser do
     with {:ok, plan} <- valid_plan(body),
          {:ok, %Plan{} = decoded_plan} <- Nestru.decode(plan, Plan) do
       decoded_plan
-      |> with_errors()
+      |> drop_nonfatal_errors()
       |> valid_plan()
     else
       error ->
@@ -55,7 +55,7 @@ defmodule OpenTripPlannerClient.Parser do
     {:error, :no_data}
   end
 
-  defp with_errors(plan) do
+  defp drop_nonfatal_errors(plan) do
     plan.routing_errors
     |> Enum.reject(&(&1.code == @walking_better_than_transit))
     |> then(&%Plan{plan | routing_errors: &1})
