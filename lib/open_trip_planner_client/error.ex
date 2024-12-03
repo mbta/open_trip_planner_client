@@ -79,7 +79,7 @@ defmodule OpenTripPlannerClient.Error do
     |> Formatter.format(:humanized)
   end
 
-  defp humanized_full_date(datetime) when is_integer(datetime) do
+  defp humanized_full_date(datetime) do
     datetime
     |> OpenTripPlannerClient.Util.to_local_time()
     |> Timex.format("{h12}:{m}{am} on {WDfull}, {Mfull} {D}")
