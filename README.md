@@ -1,10 +1,10 @@
 # OpenTripPlannerClient
 
-[![Documentation](https://img.shields.io/badge/-Documentation-blueviolet)](http://github.thecristen.net/open_trip_planner_client/)
+[![Documentation](https://img.shields.io/badge/-Documentation-blueviolet)](http://mbta.github.io/open_trip_planner_client/)
 ![Test, Docs,
-Release](https://github.com/thecristen/open_trip_planner_client/workflows/Test,%20Docs,%20Release/badge.svg)
+Release](https://github.com/mbta/open_trip_planner_client/workflows/Test,%20Docs,%20Release/badge.svg)
 [![Last
-Updated](https://img.shields.io/github/last-commit/thecristen/open_trip_planner_client.svg)](https://github.com/thecristen/open_trip_planner_client/commits/main)
+Updated](https://img.shields.io/github/last-commit/mbta/open_trip_planner_client.svg)](https://github.com/mbta/open_trip_planner_client/commits/main)
 
 Shared functionality for working with
 [OpenTripPlanner](https://docs.opentripplanner.org/en/v2.5.0/), curated to the
@@ -23,8 +23,8 @@ def deps do
   [
     %{:open_trip_planner_client,
       [
-        github: "thecristen/open_trip_planner_client",
-        ref: "v0.9.4"
+        github: "mbta/open_trip_planner_client",
+        ref: "v0.11.1"
       ]}
   ]
 end
@@ -73,9 +73,9 @@ The library simply won't export the helper.
 ## Usage
 
 Documentation is automatically generated with every
-[release](https://github.com/thecristen/open_trip_planner_client/releases), and
+[release](https://github.com/mbta/open_trip_planner_client/releases), and
 the latest docs are published on [Github
-Pages](http://github.thecristen.net/open_trip_planner_client/).
+Pages](http://mbta.github.io/open_trip_planner_client/).
 
 ### Trip planning
 
