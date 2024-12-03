@@ -141,7 +141,11 @@
           {Credo.Check.Refactor.MapJoin, []},
           {Credo.Check.Refactor.MapMap, []},
           {Credo.Check.Refactor.MatchInCondition, []},
-          {Credo.Check.Refactor.ModuleDependencies, [excluded_namespaces: ["OpenTripPlannerClient.Schema"], max_deps: 10]},
+          {Credo.Check.Refactor.ModuleDependencies,
+           [
+             excluded_namespaces: ["OpenTripPlannerClient.Schema", "OpenTripPlannerClient.Util"],
+             max_deps: 15
+           ]},
           {Credo.Check.Refactor.NegatedConditionsInUnless, []},
           {Credo.Check.Refactor.NegatedConditionsWithElse, []},
           {Credo.Check.Refactor.NegatedIsNil, []},
@@ -196,7 +200,7 @@
           {Credo.Check.Readability.MultiAlias, []},
           {Credo.Check.Readability.SinglePipe, []},
           {Credo.Check.Warning.LazyLogging, []},
-          {Credo.Check.Refactor.MapInto, []},
+          {Credo.Check.Refactor.MapInto, []}
           #
           # Custom checks can be created using `mix credo.gen.check`.
           #

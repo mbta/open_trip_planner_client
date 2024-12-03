@@ -4,10 +4,7 @@ defmodule OpenTripPlannerClient.Parser do
   errors and trip planner errors into standard formats for logging and testing.
   """
 
-  require Logger
-
-  @type parse_error ::
-          :graphql_field_error | :graphql_request_error | OpenTripPlannerClient.Behaviour.error()
+  alias OpenTripPlannerClient.{Error, Plan}
 
   @walking_better_than_transit "WALKING_BETTER_THAN_TRANSIT"
 
@@ -28,53 +25,39 @@ defmodule OpenTripPlannerClient.Parser do
   null), the errors entry must be present if and only if one or more field error
   was raised during execution.
   """
-  @spec validate_body(%{}) :: {:ok, OpenTripPlannerClient.Plan.t()} | {:error, any()}
-  def validate_body(body) do
-    body
-    |> validate_graphql()
-    |> drop_walking_errors()
-    |> validate_routing()
+  @spec validate_body(map()) :: {:ok, Plan.t()} | {:error, term()}
+
+  def validate_body(%{errors: [_ | _] = errors}) do
+    {:error, Enum.map(errors, &Error.from_graphql_error/1)}
   end
 
-  defp validate_graphql(%{errors: [_ | _] = errors} = body) do
-    log_error(errors)
-
-    case body do
-      %{data: _} ->
-        {:error, :graphql_field_error}
-
-      _ ->
-        {:error, :graphql_request_error}
+  def validate_body(body) do
+    with {:ok, plan} <- valid_plan(body),
+         {:ok, %Plan{} = decoded_plan} <- Nestru.decode(plan, Plan) do
+      decoded_plan
+      |> drop_nonfatal_errors()
+      |> valid_plan()
+    else
+      error ->
+        error
     end
   end
 
-  defp validate_graphql(body), do: body
+  defp valid_plan(%Plan{routing_errors: []} = plan), do: {:ok, plan}
 
-  defp drop_walking_errors(%{data: %{plan: %{routing_errors: routing_errors}}} = body)
-       when is_list(routing_errors) do
-    update_in(body, [:data, :plan, :routing_errors], &reject_walking_errors/1)
+  defp valid_plan(%Plan{} = plan),
+    do: {:error, Error.from_routing_errors(plan)}
+
+  defp valid_plan(%{data: %{plan: nil}}), do: {:error, :no_plan}
+  defp valid_plan(%{data: %{plan: plan}}), do: {:ok, plan}
+
+  defp valid_plan(_) do
+    {:error, :no_data}
   end
 
-  defp drop_walking_errors(body), do: body
-
-  defp reject_walking_errors(routing_errors) do
-    Enum.reject(routing_errors, &(&1.code == @walking_better_than_transit))
+  defp drop_nonfatal_errors(plan) do
+    plan.routing_errors
+    |> Enum.reject(&(&1.code == @walking_better_than_transit))
+    |> then(&%Plan{plan | routing_errors: &1})
   end
-
-  defp validate_routing(%{
-         data: %{plan: %{routing_errors: [%{code: code} | _] = routing_errors}}
-       }) do
-    log_error(routing_errors)
-    {:error, code}
-  end
-
-  defp validate_routing(%{data: %{plan: plan}}) do
-    Nestru.decode(plan, OpenTripPlannerClient.Plan)
-  end
-
-  defp validate_routing(body), do: body
-
-  defp log_error(errors) when is_list(errors), do: Enum.each(errors, &log_error/1)
-
-  defp log_error(error), do: Logger.error(error)
 end

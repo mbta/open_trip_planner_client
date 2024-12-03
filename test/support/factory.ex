@@ -9,7 +9,7 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
 
     import Faker.Random.Elixir, only: [random_uniform: 0]
 
-    alias OpenTripPlannerClient.PlanParams
+    alias OpenTripPlannerClient.{Plan, PlanParams}
 
     alias OpenTripPlannerClient.Schema.{
       Agency,
@@ -23,6 +23,35 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
       Stop,
       Trip
     }
+
+    def plan_factory do
+      %Plan{
+        date: Faker.DateTime.forward(2),
+        itineraries: __MODULE__.build_list(3, :itinerary),
+        routing_errors: [],
+        search_window_used: 3600
+      }
+    end
+
+    def plan_with_errors_factory do
+      build(:plan, routing_errors: __MODULE__.build_list(2, :routing_error))
+    end
+
+    def routing_error_factory do
+      %{
+        code:
+          Faker.Util.pick([
+            "NO_TRANSIT_CONNECTION",
+            "NO_TRANSIT_CONNECTION_IN_SEARCH_WINDOW",
+            "OUTSIDE_SERVICE_PERIOD",
+            "OUTSIDE_BOUNDS",
+            "LOCATION_NOT_FOUND",
+            "NO_STOPS_IN_RANGE",
+            "WALKING_BETTER_THAN_TRANSIT"
+          ]),
+        description: Faker.Lorem.sentence(3)
+      }
+    end
 
     def agency_factory do
       %Agency{

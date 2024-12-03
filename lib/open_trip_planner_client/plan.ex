@@ -18,8 +18,7 @@ defmodule OpenTripPlannerClient.Plan do
         |> update_in([:itineraries], &replace_nil_with_list/1)
         |> update_in([:date], fn
           dt when is_integer(dt) ->
-            Timex.from_unix(dt, :milliseconds)
-            |> OpenTripPlannerClient.Util.to_local_time()
+            OpenTripPlannerClient.Util.to_local_time(dt)
 
           dt ->
             dt

@@ -2,10 +2,11 @@ defmodule OpenTripPlannerClient.ParserTest do
   use ExUnit.Case, async: true
   import ExUnit.CaptureLog
   import OpenTripPlannerClient.Parser
+  import OpenTripPlannerClient.Test.Support.Factory
 
   describe "validate_body/1" do
     test "handles GraphQL request error" do
-      assert {{:error, :graphql_request_error}, log} =
+      assert {{:error, errors}, log} =
                with_log(fn ->
                  validate_body(%{
                    errors: [
@@ -38,47 +39,89 @@ defmodule OpenTripPlannerClient.ParserTest do
                  })
                end)
 
+      assert errors == [
+               %OpenTripPlannerClient.Error{
+                 details: %{
+                   extensions: %{classification: "ValidationError"},
+                   locations: [%{line: 3, column: 16}]
+                 },
+                 message:
+                   "Validation error (UndefinedVariable@[plan]) : Undefined variable 'from'",
+                 type: :graphql_error
+               },
+               %OpenTripPlannerClient.Error{
+                 details: %{
+                   extensions: %{classification: "ValidationError"},
+                   locations: [%{line: 1, column: 16}]
+                 },
+                 message: "Validation error (UnusedVariable) : Unused variable 'fromPlace'",
+                 type: :graphql_error
+               }
+             ]
+
       assert log =~ "Validation error"
     end
 
     test "handles GraphQL field error" do
-      assert {{:error, :graphql_field_error}, log} =
-               with_log(fn ->
-                 validate_body(%{
-                   data: %{plan: nil},
-                   errors: [
-                     %{
-                       message:
-                         "Exception while fetching data (/plan) : The value is not in range[0.0, 1.7976931348623157E308]: -5.0",
-                       locations: [
-                         %{
-                           line: 2,
-                           column: 3
-                         }
-                       ],
-                       path: [
-                         "plan"
-                       ],
-                       extensions: %{
-                         classification: "DataFetchingException"
-                       }
-                     }
-                   ]
-                 })
-               end)
+      {{:error, [error]}, log} =
+        with_log(fn ->
+          validate_body(%{
+            data: %{plan: nil},
+            errors: [
+              %{
+                message:
+                  "Exception while fetching data (/plan) : The value is not in range[0.0, 1.7976931348623157E308]: -5.0",
+                locations: [
+                  %{
+                    line: 2,
+                    column: 3
+                  }
+                ],
+                path: [
+                  "plan"
+                ],
+                extensions: %{
+                  classification: "DataFetchingException"
+                }
+              }
+            ]
+          })
+        end)
+
+      assert error == %OpenTripPlannerClient.Error{
+               details: %{
+                 path: ["plan"],
+                 extensions: %{classification: "DataFetchingException"},
+                 locations: [%{line: 2, column: 3}]
+               },
+               message:
+                 "Exception while fetching data (/plan) : The value is not in range[0.0, 1.7976931348623157E308]: -5.0",
+               type: :graphql_error
+             }
 
       assert log =~ "Exception while fetching data"
     end
 
-    test "handles routing errors" do
-      assert {{:error, "PATH_NOT_FOUND"}, log} =
+    test "handles and logs routing errors" do
+      code = "PATH_NOT_FOUND"
+      routing_error = build(:routing_error, code: code)
+
+      assert {{:error, errors}, log} =
                with_log(fn ->
                  validate_body(%{
-                   data: %{plan: %{routing_errors: [%{code: "PATH_NOT_FOUND"}]}}
+                   data: %{plan: %{routing_errors: [routing_error]}}
                  })
                end)
 
-      assert log =~ "PATH_NOT_FOUND"
+      assert [
+               %OpenTripPlannerClient.Error{
+                 details: ^routing_error,
+                 message: "Something went wrong.",
+                 type: :routing_error
+               }
+             ] = errors
+
+      assert log =~ code
     end
 
     test "does not treat 'WALKING_BETTER_THAN_TRANSIT' as a fatal error" do

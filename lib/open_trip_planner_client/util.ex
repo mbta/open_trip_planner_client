@@ -20,6 +20,12 @@ defmodule OpenTripPlannerClient.Util do
   def to_uppercase_atom(other), do: other
 
   @spec to_local_time(Timex.Types.valid_datetime()) :: DateTime.t()
+  def to_local_time(datetime) when is_integer(datetime) do
+    datetime
+    |> Timex.from_unix(:milliseconds)
+    |> to_local_time()
+  end
+
   def to_local_time(datetime) do
     Timex.to_datetime(
       datetime,
