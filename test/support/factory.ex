@@ -34,7 +34,7 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
     end
 
     def plan_with_errors_factory do
-      build(:plan, routing_errors: __MODULE__.build_list(2, :routing_error))
+      build(:plan, routing_errors: __MODULE__.build_list(2, :routing_error), itineraries: [])
     end
 
     def routing_error_factory do
@@ -257,7 +257,9 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
 
     def trip_factory do
       %Trip{
-        gtfs_id: gtfs_prefix() <> Faker.Internet.slug()
+        gtfs_id: gtfs_prefix() <> Faker.Internet.slug(),
+        trip_short_name: [Faker.Internet.slug(), nil] |> Faker.Util.pick(),
+        trip_headsign: Faker.Color.fancy_name()
       }
     end
 
