@@ -75,6 +75,7 @@ query TripPlan(
         to { ...PlaceInfo }
         transitLeg
         trip {
+          directionId
           gtfsId
           tripHeadsign
           tripShortName

@@ -10,6 +10,7 @@ defmodule OpenTripPlannerClient.Schema.Trip do
 
   @derive Nestru.Decoder
   schema do
+    field(:direction_id, String.t())
     field(:gtfs_id, gtfs_id(), @nonnull_field)
     field(:trip_headsign, String.t())
     field(:trip_short_name, String.t())

@@ -257,6 +257,7 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
 
     def trip_factory do
       %Trip{
+        direction_id: Faker.Util.pick(["0", "1"]),
         gtfs_id: gtfs_prefix() <> Faker.Internet.slug(),
         trip_short_name: [Faker.Internet.slug(), nil] |> Faker.Util.pick(),
         trip_headsign: Faker.Color.fancy_name()
