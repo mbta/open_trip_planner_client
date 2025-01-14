@@ -123,10 +123,15 @@ defmodule OpenTripPlannerClient.ItineraryTag do
     |> Map.drop([:candidate_tags])
   end
 
-  @spec sort_tagged([Behaviour.itinerary_map()]) :: [Behaviour.itinerary_map()]
-  def sort_tagged(tagged_itineraries) do
+  @doc """
+  Sorts first by tag name, then chronologically. While default behavior sorts
+  itineraries by start time, can also support sort by itinerary end time.
+  """
+  @spec sort_tagged([Behaviour.itinerary_map()], :start | :end) :: [Behaviour.itinerary_map()]
+  def sort_tagged(tagged_itineraries, start_or_end \\ :start) do
     chrono_sorter = fn itinerary ->
-      itinerary.start
+      itinerary
+      |> Map.get(start_or_end)
       |> DateTime.to_unix()
     end
 

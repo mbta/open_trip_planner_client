@@ -100,4 +100,36 @@ defmodule OpenTripPlannerClient.ItineraryTagTest do
              %{tag: nil}
            ] = sorted
   end
+
+  test "sort_tagged/2 supports sort by end time" do
+    end_dt = Faker.DateTime.forward(1)
+    end_dt1 = Timex.shift(end_dt, hours: 1)
+    end_dt2 = Timex.shift(end_dt, hours: 2)
+
+    itineraries = [
+      build(:itinerary, %{end: end_dt})
+      |> Map.put(:tag, :least_walking),
+      build(:itinerary, %{end: end_dt})
+      |> Map.put(:tag, nil),
+      build(:itinerary, %{end: end_dt1})
+      |> Map.put(:tag, :least_walking),
+      build(:itinerary, %{end: end_dt2})
+      |> Map.put(:tag, :least_walking),
+      build(:itinerary, %{end: end_dt2})
+      |> Map.put(:tag, :earliest_arrival),
+      build(:itinerary, %{end: end_dt1})
+      |> Map.put(:tag, :most_direct)
+    ]
+
+    sorted = ItineraryTag.sort_tagged(itineraries, :end)
+
+    assert [
+             %{tag: :most_direct},
+             %{tag: :earliest_arrival},
+             %{tag: :least_walking, end: ^end_dt},
+             %{tag: :least_walking, end: ^end_dt1},
+             %{tag: :least_walking, end: ^end_dt2},
+             %{tag: nil}
+           ] = sorted
+  end
 end
