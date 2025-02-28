@@ -79,6 +79,7 @@ defmodule OpenTripPlannerClient.Schema.Leg do
     field(:duration, duration_seconds())
     field(:end, LegTime.t(), @nonnull_field)
     field(:from, Place.t(), @nonnull_field)
+    field(:headsign, String.t())
     field(:intermediate_stops, [Stop.t()])
     field(:leg_geometry, Geometry.t())
     field(:mode, PlanParams.mode_t())

@@ -48,6 +48,7 @@ query TripPlan(
         duration
         end { ...TimeInfo }
         from { ...PlaceInfo }
+        headsign
         intermediateStops { 
           gtfsId,
           name
