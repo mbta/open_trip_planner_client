@@ -23,6 +23,7 @@ defmodule OpenTripPlannerClient do
   Generate a trip plan with the given endpoints and options.
   """
   def plan(from, to, opts) do
+    dbg("DOOOO THE PLAN")
     {tags, opts} = Keyword.pop(opts, :tags, default_tags(opts))
 
     case ParamsBuilder.build_params(from, to, opts) do
