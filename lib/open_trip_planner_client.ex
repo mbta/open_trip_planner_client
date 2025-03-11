@@ -93,6 +93,7 @@ defmodule OpenTripPlannerClient do
     |> Req.new()
     |> AbsintheClient.attach()
     |> Req.post(graphql: {@plan_query, params})
+    |> dbg()
   end
 
   defp plan_url do
