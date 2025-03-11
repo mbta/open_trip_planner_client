@@ -45,6 +45,7 @@ defmodule OpenTripPlannerClient.Util do
   @spec to_existing_atom(String.t()) :: atom()
   def to_existing_atom(string) do
     for mod <- [
+          OpenTripPlannerClient.QueryResult,
           OpenTripPlannerClient.Plan,
           OpenTripPlannerClient.PlanParams,
           OpenTripPlannerClient.Schema.Agency,
