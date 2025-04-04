@@ -104,7 +104,7 @@ query TripPlan(
     searchWindow: 7200
 
     # Increased from 3 to offer more itineraries for potential post-processing
-    numItineraries: $numItineraries
+    numItineraries: 3
 
     # Increased from 2.0 to reduce number of itineraries with significant walking
     walkReluctance: 5.0
