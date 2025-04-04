@@ -48,9 +48,9 @@ defmodule OpenTripPlannerClient do
 
   defp do_plan(params, tags) do
     case send_request(params) do
-      {:ok, plan} ->
-        plan
-        |> update_in([:itineraries], fn itineraries ->
+      {:ok, query_result} ->
+        query_result
+        |> update_in([:actual_plan, :itineraries], fn itineraries ->
           itineraries
           |> Enum.map(&Map.put_new(&1, :tag, nil))
           |> ItineraryTag.apply_tags(tags)

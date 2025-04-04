@@ -130,5 +130,23 @@ defmodule OpenTripPlannerClient.ParserTest do
                  data: %{plan: %{routing_errors: [%{code: "WALKING_BETTER_THAN_TRANSIT"}]}}
                })
     end
+
+    test "handles a nil plan" do
+      assert {{:error, :no_plan}, _log} =
+               with_log(fn ->
+                 validate_body(%{
+                   data: %{plan: nil}
+                 })
+               end)
+    end
+
+    test "handles a missing plan" do
+      assert {{:error, :no_data}, _log} =
+               with_log(fn ->
+                 validate_body(%{
+                   data: %{}
+                 })
+               end)
+    end
   end
 end
