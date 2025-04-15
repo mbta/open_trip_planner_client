@@ -227,6 +227,17 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
       }
     end
 
+    def place_with_stop_factory do
+      stop = build(:stop)
+
+      %Place{
+        name: stop.name,
+        lat: Faker.Address.latitude(),
+        lon: Faker.Address.longitude(),
+        stop: stop
+      }
+    end
+
     def route_factory do
       %Route{
         gtfs_id: gtfs_prefix() <> Faker.Internet.slug(),
@@ -337,6 +348,39 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
           "#{Faker.Address.street_name()}::#{gtfs_prefix()}:#{Faker.Internet.slug()}"
         end
       )
+    end
+
+    def mbta_bus_leg_factory(attrs) do
+      agency = build(:agency, %{name: "MBTA"})
+      trip_gtfs_id = gtfs_prefix(agency.name) <> Faker.Internet.slug()
+
+      build(:leg, %{
+        agency: agency,
+        from:
+          build(:place, %{
+            stop: build(:stop, %{gtfs_id: gtfs_prefix(agency.name) <> Faker.Internet.slug()})
+          }),
+        intermediate_stops:
+          build_list(3, :stop, %{
+            gtfs_id: fn ->
+              sequence(:intermediate_stop_id, fn _ ->
+                gtfs_prefix(agency.name) <> Faker.Internet.slug()
+              end)
+            end
+          }),
+        mode: Faker.Util.pick([:TRANSIT, :RAIL, :SUBWAY, :BUS]),
+        real_time: true,
+        realtime_state: Faker.Util.pick(Leg.realtime_state()),
+        route: build(:route, type: 3),
+        to:
+          build(:place, %{
+            stop: build(:stop, %{gtfs_id: gtfs_prefix(agency.name) <> Faker.Internet.slug()})
+          }),
+        trip: build(:trip, %{gtfs_id: trip_gtfs_id}),
+        transit_leg: true
+      })
+      |> merge_attributes(attrs)
+      |> evaluate_lazy_attributes()
     end
   end
 end
