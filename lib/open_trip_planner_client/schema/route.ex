@@ -54,6 +54,7 @@ defmodule OpenTripPlannerClient.Schema.Route do
     field(:color, hex_color())
     field(:text_color, hex_color())
     field(:desc, desc())
+    field(:sort_order, non_neg_integer())
   end
 
   @spec gtfs_route_type :: [gtfs_route_type()]

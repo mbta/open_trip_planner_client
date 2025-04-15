@@ -235,7 +235,8 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
         type: Faker.Util.pick(Route.gtfs_route_type()),
         color: Faker.Color.rgb_hex(),
         text_color: Faker.Color.rgb_hex(),
-        desc: Faker.Company.catch_phrase()
+        desc: Faker.Company.catch_phrase(),
+        sort_order: Faker.random_between(100, 1000)
       }
     end
 

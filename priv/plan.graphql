@@ -65,6 +65,7 @@ query TripPlan(
           color
           textColor
           desc
+          sortOrder
         }
         start { ...TimeInfo }
         steps {
