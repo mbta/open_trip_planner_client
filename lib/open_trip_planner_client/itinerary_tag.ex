@@ -137,7 +137,7 @@ defmodule OpenTripPlannerClient.ItineraryTag do
 
     priority_sorter = fn itinerary ->
       @tag_priority_order
-      |> Enum.find_index(&(&1 === itinerary.tag))
+      |> Enum.find_index(&(&1 === itinerary[:tag]))
     end
 
     tagged_itineraries
