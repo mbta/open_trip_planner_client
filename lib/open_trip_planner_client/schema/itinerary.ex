@@ -22,6 +22,7 @@ defmodule OpenTripPlannerClient.Schema.Itinerary do
     field(:accessibility_score, accessibility_score())
     field(:duration, duration_seconds())
     field(:end, offset_datetime())
+    field(:generalized_cost, generalized_cost())
     field(:legs, [Leg.t()], @nonnull_field)
     field(:number_of_transfers, non_neg_integer(), @nonnull_field)
     field(:start, offset_datetime())

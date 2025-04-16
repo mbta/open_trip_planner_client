@@ -24,6 +24,11 @@ defmodule OpenTripPlannerClient.Schema do
       @type duration_seconds :: non_neg_integer()
 
       @typedoc """
+      Generalized cost used for ranking itineraries
+      """
+      @type generalized_cost :: non_neg_integer()
+
+      @typedoc """
       ID of a resource in format FeedId:ResourceId
       """
       @type gtfs_id :: String.t()

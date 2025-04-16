@@ -45,6 +45,7 @@ query TripPlan(
       accessibilityScore
       duration
       end
+      generalizedCost
       legs {
         agency { name }
         distance
@@ -117,6 +118,7 @@ query TripPlan(
 
     # Disallow the "no disruptions" GTFS feed for regular trip plans
     banned: { agencies: "mbta-ma-us:1" }
+    # banned: { agencies: "mbta-ma-us:1,mbta-ma-us-no-disruptions:1" }
   ) {
     searchWindowUsed
     date
@@ -128,6 +130,7 @@ query TripPlan(
       accessibilityScore
       duration
       end
+      generalizedCost
       legs {
         agency { name }
         distance
