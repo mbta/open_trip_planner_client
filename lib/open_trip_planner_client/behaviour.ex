@@ -5,35 +5,7 @@ defmodule OpenTripPlannerClient.Behaviour do
   May be useful for testing with libraries like [Mox](https://hex.pm/packages/mox).
   """
 
-  alias OpenTripPlannerClient.ItineraryTag.Behaviour
   alias OpenTripPlannerClient.PlanParams
-
-  @typedoc """
-  Places are used in the `c:plan/3` callback to denote each of origin and
-  destination for a trip plan. Either both `latitude` and `longitude`, or
-  `stop_id` are required for successful trip planning.
-  """
-  @type place ::
-          {:name, String.t()}
-          | {:stop_id, String.t()}
-          | {:lat_lon, {float, float}}
-
-  @typedoc """
-  Arguments to be passed into OpenTripPlanner or processed post-planning.
-
-    * `:arrive_by` - The DateTime to get to the destination by. Will assume a
-      value of now if absent.
-    * `:depart_at` - The DateTime to depart from the origin. Will assume a value
-      of now if absent. Note this will be overridden by `:arrive_by` should that
-      be present.
-    * `:wheelchair` - Limit itineraries to those that are wheelchair accessible.
-    * `:tags` - A list of tags to apply to itineraries.
-  """
-  @type plan_opt ::
-          {:arrive_by, DateTime.t()}
-          | {:depart_at, DateTime.t()}
-          | {:wheelchair, boolean}
-          | {:tags, [Behaviour.t()]}
 
   @typedoc """
   Possible planner error messages, taken from `Message.properties` in the OTP
@@ -99,7 +71,6 @@ defmodule OpenTripPlannerClient.Behaviour do
           | String.t()
 
   @type plan_result :: {:ok, [map()]} | {:error, error()}
-  @callback plan(from :: [place], to :: [place], opts :: [plan_opt()]) :: plan_result()
   @callback plan(params :: PlanParams.t()) :: plan_result()
   @callback plan(
               params :: PlanParams.t(),

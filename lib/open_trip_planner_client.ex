@@ -12,7 +12,7 @@ defmodule OpenTripPlannerClient do
   """
   @behaviour OpenTripPlannerClient.Behaviour
 
-  alias OpenTripPlannerClient.{ItineraryTag, ParamsBuilder, Parser, PlanParams, Util}
+  alias OpenTripPlannerClient.{ItineraryTag, Parser, PlanParams, Util}
 
   require Logger
 
@@ -20,33 +20,11 @@ defmodule OpenTripPlannerClient do
 
   @impl OpenTripPlannerClient.Behaviour
   @doc """
-  Generate a trip plan with the given endpoints and options.
+  Generate a trip plan with the given endpoints and options. Supports customizing which tags are applied to the results.
   """
-  def plan(from, to, opts) do
-    {tags, opts} = Keyword.pop(opts, :tags, default_tags(opts))
-
-    case ParamsBuilder.build_params(from, to, opts) do
-      {:ok, params} ->
-        params
-        |> PlanParams.new()
-        |> do_plan(tags)
-
-      error ->
-        error
-        |> inspect()
-        |> Logger.error(%{from: from, to: to, opts: opts})
-
-        error
-    end
-  end
-
-  @impl OpenTripPlannerClient.Behaviour
   def plan(params, tags \\ nil) do
     tags = if tags, do: tags, else: default_tags(params)
-    do_plan(params, tags)
-  end
 
-  defp do_plan(params, tags) do
     case send_request(params) do
       {:ok, plan} ->
         plan
