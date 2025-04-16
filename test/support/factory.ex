@@ -338,5 +338,37 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
       |> merge_attributes(attrs)
       |> evaluate_lazy_attributes()
     end
+
+    @doc """
+    Returns a list of itineraries that can be grouped.
+
+    You can pass in the number of groups you want and the number of itineraries in each group.
+    """
+    def groupable_otp_itineraries(group_count \\ 2, itinerary_count \\ 1) do
+      Enum.map(1..group_count, fn _ ->
+        otp_itineraries(itinerary_count)
+      end)
+      |> List.flatten()
+      |> Enum.shuffle()
+    end
+
+    # Create a number of otp itineraries with the same two random legs.
+    defp otp_itineraries(itinerary_count) do
+      [a, b, c] = build_list(3, :place_with_stop)
+      a_b_leg = build(:transit_leg, from: a, to: b)
+      b_c_leg = build(:transit_leg, from: b, to: c)
+      build_list(itinerary_count, :itinerary, legs: [a_b_leg, b_c_leg])
+    end
+
+    def itinerary_group_factory(attrs) do
+      itineraries = attrs[:itineraries] || build_list(5, :itinerary)
+      index = attrs[:representative_index] || Faker.random_between(0, Enum.count(itineraries) - 1)
+
+      %OpenTripPlannerClient.ItineraryGroup{
+        itineraries: itineraries,
+        representative_index: index,
+        time_key: attrs[:time_key] || Faker.Util.pick([:start, :end])
+      }
+    end
   end
 end
