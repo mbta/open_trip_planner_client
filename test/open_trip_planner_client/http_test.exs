@@ -13,7 +13,7 @@ defmodule OpenTripPlannerClient.HttpTest do
   import OpenTripPlannerClient.Test.Support.Factory
   import Plug.Conn, only: [send_resp: 3]
 
-  alias OpenTripPlannerClient.{ItineraryTag, Plan}
+  alias OpenTripPlannerClient.{ItineraryGroup, ItineraryTag, Plan}
 
   setup context do
     if context[:external] do
@@ -46,7 +46,7 @@ defmodule OpenTripPlannerClient.HttpTest do
         |> Plug.Conn.send_resp(:ok, @fixture)
       end)
 
-      {:ok, plan} =
+      {:ok, itinerary_groups} =
         plan(
           build(:plan_params),
           [
@@ -56,15 +56,24 @@ defmodule OpenTripPlannerClient.HttpTest do
           ]
         )
 
-      assert plan.itineraries
+      assert itinerary_groups
 
-      {tagged, untagged} = Enum.split_while(plan.itineraries, &(!is_nil(&1.tag)))
+      {untagged, tagged} =
+        Enum.split_while(itinerary_groups, fn group ->
+          representative_tag(group)
+          |> is_nil()
+        end)
 
       assert untagged
-             |> Enum.map(& &1.tag)
+             |> Enum.map(&representative_tag/1)
              |> Enum.all?(&is_nil/1)
 
-      assert :earliest_arrival in Enum.map(tagged, & &1.tag)
+      assert :least_walking in Enum.map(tagged, &representative_tag/1)
+    end
+
+    defp representative_tag(group) do
+      ItineraryGroup.representative_itinerary(group)
+      |> Map.get(:tag)
     end
   end
 
