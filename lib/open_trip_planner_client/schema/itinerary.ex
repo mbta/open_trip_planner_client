@@ -54,7 +54,7 @@ defmodule OpenTripPlannerClient.Schema.Itinerary do
   - Same grouped legs*
     - Disregarding very short walking legs up to 0.2 mi
   """
-  @spec group_identifier(__MODULE__.t()) :: Tuple.t()
+  @spec group_identifier(__MODULE__.t()) :: tuple()
   def group_identifier(itinerary) do
     leg_groups =
       itinerary.legs
