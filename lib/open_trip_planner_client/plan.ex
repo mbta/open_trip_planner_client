@@ -40,7 +40,7 @@ defmodule OpenTripPlannerClient.Plan do
   schema do
     field(:date, DateTime)
     field(:itineraries, [Itinerary.t()])
-    field(:routing_errors, [Plan.RoutingError.t()])
+    field(:routing_errors, [RoutingError.t()])
     field(:search_window_used, non_neg_integer())
   end
 

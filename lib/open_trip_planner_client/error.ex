@@ -26,7 +26,7 @@ defmodule OpenTripPlannerClient.Error do
     %__MODULE__{details: details, message: message, type: :graphql_error}
   end
 
-  @spec from_routing_errors(Plan.t()) :: t()
+  @spec from_routing_errors(Plan.t()) :: [t()]
   def from_routing_errors(%Plan{routing_errors: routing_errors} = plan) do
     _ = log_error(routing_errors)
 

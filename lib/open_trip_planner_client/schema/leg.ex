@@ -9,6 +9,7 @@ defmodule OpenTripPlannerClient.Schema.Leg do
 
   use OpenTripPlannerClient.Schema
 
+  alias OpenTripPlannerClient.PlanParams
   alias OpenTripPlannerClient.Schema.{Agency, Geometry, LegTime, Place, Route, Step, Stop, Trip}
 
   @realtime_state [

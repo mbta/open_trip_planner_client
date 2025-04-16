@@ -8,6 +8,8 @@ defmodule OpenTripPlannerClient.Schema.LegTime do
 
   use OpenTripPlannerClient.Schema
 
+  alias OpenTripPlannerClient.Schema.LegTime.Estimated
+
   @derive {Nestru.Decoder,
            hint: %{
              scheduled_time: DateTime,
