@@ -20,6 +20,13 @@ defmodule OpenTripPlannerClient.Schema.LegTime do
     field(:estimated, Estimated.t())
   end
 
+  @doc """
+  The time, either estimated or scheduled.
+  """
+  @spec time(__MODULE__.t()) :: DateTime.t()
+  def time(%__MODULE__{estimated: %{time: time}}), do: time
+  def time(%__MODULE__{scheduled_time: time}), do: time
+
   defmodule Estimated do
     @moduledoc """
     Real-time estimates for a vehicle at a certain place.

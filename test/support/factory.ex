@@ -96,6 +96,13 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
       }
     end
 
+    def leg_time_estimated_factory do
+      %LegTime.Estimated{
+        delay: Faker.random_between(1, 20),
+        time: Faker.DateTime.forward(2)
+      }
+    end
+
     # Build a bunch of legs such that their start/end times follow each other
     # (e.g. creating a coherent sequence)
     defp build_leg_sequence(number) do
