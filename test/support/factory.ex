@@ -263,7 +263,9 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
     def stop_factory do
       %Stop{
         gtfs_id: gtfs_prefix() <> Faker.Internet.slug(),
-        name: Faker.Address.city()
+        name: Faker.Address.city(),
+        zone_id:
+          [gtfs_prefix() <> Faker.Util.pick(["1A", "1", "2", "3"]), nil] |> Faker.Util.pick()
       }
     end
 

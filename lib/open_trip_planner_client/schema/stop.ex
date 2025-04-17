@@ -12,5 +12,6 @@ defmodule OpenTripPlannerClient.Schema.Stop do
   schema do
     field(:gtfs_id, gtfs_id(), @nonnull_field)
     field(:name, String.t())
+    field(:zone_id, String.t())
   end
 end
