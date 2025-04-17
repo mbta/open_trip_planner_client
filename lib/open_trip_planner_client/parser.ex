@@ -43,25 +43,12 @@ defmodule OpenTripPlannerClient.Parser do
     end
   end
 
-  defp plan_from_data(%{data: %{plan: nil}}) do
-    {:error, :no_plan}
-  end
+  defp plan_from_data(%{data: %{plan: nil}}), do: {:error, :no_plan}
+  defp plan_from_data(%{data: %{plan: plan}}), do: {:ok, plan}
+  defp plan_from_data(_), do: {:error, :no_data}
 
-  defp plan_from_data(%{data: %{plan: plan}}) do
-    {:ok, plan}
-  end
-
-  defp plan_from_data(_) do
-    {:error, :no_data}
-  end
-
-  defp validate_no_routing_errors(%Plan{routing_errors: []} = plan) do
-    {:ok, plan}
-  end
-
-  defp validate_no_routing_errors(%Plan{} = plan) do
-    {:error, Error.from_routing_errors(plan)}
-  end
+  defp validate_no_routing_errors(%Plan{routing_errors: []} = plan), do: {:ok, plan}
+  defp validate_no_routing_errors(%Plan{} = plan), do: {:error, Error.from_routing_errors(plan)}
 
   defp drop_nonfatal_errors(plan) do
     plan.routing_errors
