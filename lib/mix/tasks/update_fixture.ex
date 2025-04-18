@@ -8,13 +8,14 @@ defmodule Mix.Tasks.UpdateFixture do
   def run(_) do
     Mix.Task.run("app.start")
 
-    {:ok, plan} =
-      %{
-        fromPlace: "::mbta-ma-us:place-alfcl",
-        toPlace: "Franklin Park Zoo::42.305067,-71.090434"
-      }
-      |> PlanParams.new()
-      |> OpenTripPlannerClient.send_request()
+    params =
+      PlanParams.new(%{name: "Alewife", stop_id: "place-alfcl"}, %{
+        name: "Franklin Park Zoo",
+        latitude: 42.305067,
+        longitude: -71.090434
+      })
+
+    {:ok, plan} = OpenTripPlannerClient.send_request(params)
 
     encoded = Jason.encode!(%{data: %{plan: plan}}, pretty: true)
 

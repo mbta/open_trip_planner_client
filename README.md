@@ -79,21 +79,21 @@ Pages](http://mbta.github.io/open_trip_planner_client/).
 
 ### Trip planning
 
-At minimum, origin and destination must specify either a valid `:stop_id` or `:lat_lon`
-value, and can optionally include a `:name`.
+At minimum, origin and destination must specify any `:name` and either a valid `:stop_id` or `:latitude` and `:longitude`.
 
 ```elixir
-origin = [stop_id: "place-north"]
-destination = [name: "Park Plaza", lat_lon: {42.348777, -71.066481}]
-{:ok, plan} = OpenTripPlannerClient.plan(origin, destination, [])
+origin = %{name: "North Station", stop_id: "place-north"}
+destination = %{name: "Park Plaza", latitude: 42.348777, longitude: -71.066481}
+plan_params = OpenTripPlannerClient.PlanParams.new(origin, destination)
+{:ok, plan} = OpenTripPlannerClient.plan(plan_params)
 ```
 
-The `t:OpenTripPlannerClient.Behaviour.plan_opt/0` type describes additional expected parameters, which include specifying the departure or arrival times, filtering for wheelchair accessibility, and generating one or more supported tags.
+The `t:OpenTripPlannerClient.PlanParams.opts/0` type describes additional parameters, which include specifying custom departure or arrival times, filtering for wheelchair accessibility, or customizing which transit modes are used in the plan.
 
 ```elixir
-plan(origin, destination, arriveBy: ~N[2024-04-15T09:00:00] |> DateTime.from_naive!("America/New_York"))
-plan(origin, destination, wheelchair: false, depart_at: ~N[2024-03-30T11:24:00] |> DateTime.from_naive!("America/New_York"))
-plan(origin, destination, mode: ["RAIL", "SUBWAY"])
+OpenTripPlannerClient.PlanParams.new(origin, destination, datetime: ~N[2025-05-15T09:00:00] |> DateTime.from_naive!("America/New_York"), arrive_by: true)
+OpenTripPlannerClient.PlanParams.new(origin, destination, wheelchair: false, arrive_by: false)
+OpenTripPlannerClient.PlanParams.new(origin, destination, mode: [:RAIL, :SUBWAY], num_itineraries: 20)
 ```
 
 The list of itineraries returned are directly from
@@ -101,7 +101,7 @@ OpenTripPlanner, and consumers are expected to handle further parsing. Refer to 
 
 ### Trip planning with tagging
 
-A special `:tags` feature will score the list of itineraries against a specified
+This optional feature will score the list of itineraries against a specified
 criteria. This client provides several tag implementations, and it's also
 possible to create custom tags, by implementing the
 `OpenTripPlannerClient.ItineraryTag` behaviour.
@@ -115,7 +115,8 @@ tags = [
   ItineraryTag.LeastWalking,
   ItineraryTag.ShortestTrip
 ]
-{:ok, itineraries} = plan(origin, destination, tags: tags)
+
+{:ok, itineraries} = plan(params, tags)
 ```
 
 The returned itineraries include an extra field, `"tag"`, which will contain the relevant tag.

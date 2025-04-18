@@ -277,22 +277,66 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
 
     def plan_params_factory do
       %PlanParams{
-        fromPlace: build(:plan_params_place) |> PlanParams.to_place_param(),
-        toPlace: build(:plan_params_place) |> PlanParams.to_place_param(),
-        date: Faker.DateTime.forward(3) |> PlanParams.to_date_param(),
-        time: Faker.DateTime.forward(3) |> PlanParams.to_time_param(),
+        fromPlace: build(:place_param),
+        toPlace: build(:place_param),
+        date: build(:date_param),
+        time: build(:time_param),
         arriveBy: Faker.Util.pick([true, false]),
+        transportModes: build(:modes_param),
         wheelchair: Faker.Util.pick([true, false])
       }
     end
 
-    def plan_params_place_factory do
-      %{
-        name: Faker.Address.street_name(),
-        latitude: Faker.Address.latitude(),
-        longitude: Faker.Address.longitude(),
-        stop_id: [Faker.Internet.slug(), nil] |> Faker.Util.pick()
-      }
+    def modes_param_factory(_) do
+      modes =
+        Faker.random_between(1, 5)
+        |> Faker.Util.sample_uniq(fn ->
+          Faker.Util.pick(PlanParams.modes())
+        end)
+        |> Enum.map(&Map.new(mode: &1))
+
+      sequence(:modes, fn _ -> modes end)
+    end
+
+    def date_param_factory(_) do
+      formatted =
+        Faker.DateTime.forward(2)
+        |> Timex.format!("{YYYY}-{0M}-{0D}")
+
+      sequence(:date, fn _ -> formatted end)
+    end
+
+    def time_param_factory(_) do
+      formatted =
+        Faker.DateTime.forward(2)
+        |> Timex.format!("{h12}:{m}{am}")
+
+      sequence(:time, fn _ -> formatted end)
+    end
+
+    def place_param_factory(_) do
+      [:lat_lon_place_param, :stop_place_param]
+      |> Faker.Util.pick()
+      |> build()
+    end
+
+    def lat_lon_place_param_factory(_) do
+      lat = Faker.Address.latitude()
+      lon = Faker.Address.longitude()
+
+      sequence(
+        :other_place,
+        fn _ -> "#{Faker.Address.street_name()}::#{lat},#{lon}" end
+      )
+    end
+
+    def stop_place_param_factory(_) do
+      sequence(
+        :stop_place,
+        fn _ ->
+          "#{Faker.Address.street_name()}::#{gtfs_prefix()}:#{Faker.Internet.slug()}"
+        end
+      )
     end
   end
 end
