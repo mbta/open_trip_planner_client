@@ -32,28 +32,23 @@ defmodule OpenTripPlannerClient.Parser do
   end
 
   def validate_body(body) do
-    with {:ok, plan} <- valid_plan(body),
+    with {:ok, plan} <- plan_from_data(body),
          {:ok, %Plan{} = decoded_plan} <- Nestru.decode(plan, Plan) do
       decoded_plan
       |> drop_nonfatal_errors()
-      |> valid_plan()
+      |> validate_no_routing_errors()
     else
       error ->
         error
     end
   end
 
-  defp valid_plan(%Plan{routing_errors: []} = plan), do: {:ok, plan}
+  defp plan_from_data(%{data: %{plan: nil}}), do: {:error, :no_plan}
+  defp plan_from_data(%{data: %{plan: plan}}), do: {:ok, plan}
+  defp plan_from_data(_), do: {:error, :no_data}
 
-  defp valid_plan(%Plan{} = plan),
-    do: {:error, Error.from_routing_errors(plan)}
-
-  defp valid_plan(%{data: %{plan: nil}}), do: {:error, :no_plan}
-  defp valid_plan(%{data: %{plan: plan}}), do: {:ok, plan}
-
-  defp valid_plan(_) do
-    {:error, :no_data}
-  end
+  defp validate_no_routing_errors(%Plan{routing_errors: []} = plan), do: {:ok, plan}
+  defp validate_no_routing_errors(%Plan{} = plan), do: {:error, Error.from_routing_errors(plan)}
 
   defp drop_nonfatal_errors(plan) do
     plan.routing_errors
