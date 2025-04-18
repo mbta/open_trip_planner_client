@@ -115,7 +115,8 @@ tags = [
   ItineraryTag.LeastWalking,
   ItineraryTag.ShortestTrip
 ]
-{:ok, itineraries} = plan(origin, destination, tags)
+
+{:ok, itineraries} = plan(params, tags)
 ```
 
 The returned itineraries include an extra field, `"tag"`, which will contain the relevant tag.
