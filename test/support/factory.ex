@@ -279,10 +279,10 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
       %PlanParams{
         fromPlace: build(:place_param),
         toPlace: build(:place_param),
-        arriveBy: Faker.Util.pick([true, false]),
-        transportModes: build(:modes_param),
         date: build(:date_param),
         time: build(:time_param),
+        arriveBy: Faker.Util.pick([true, false]),
+        transportModes: build(:modes_param),
         wheelchair: Faker.Util.pick([true, false])
       }
     end
