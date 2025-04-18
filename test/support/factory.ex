@@ -315,24 +315,28 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
     end
 
     def place_param_factory(_) do
-      stop_id = [Faker.Internet.slug(), nil] |> Faker.Util.pick()
+      [:lat_lon_place_param, :stop_place_param]
+      |> Faker.Util.pick()
+      |> build()
+    end
 
-      if stop_id do
-        sequence(
-          :stop_place,
-          fn _ ->
-            "#{Faker.Address.street_name()}::#{gtfs_prefix()}:#{Faker.Internet.slug()}"
-          end
-        )
-      else
-        lat = Faker.Address.latitude()
-        lon = Faker.Address.longitude()
+    def lat_lon_place_param_factory(_) do
+      lat = Faker.Address.latitude()
+      lon = Faker.Address.longitude()
 
-        sequence(
-          :other_place,
-          fn _ -> "#{Faker.Address.street_name()}::#{lat},#{lon}" end
-        )
-      end
+      sequence(
+        :other_place,
+        fn _ -> "#{Faker.Address.street_name()}::#{lat},#{lon}" end
+      )
+    end
+
+    def stop_place_param_factory(_) do
+      sequence(
+        :stop_place,
+        fn _ ->
+          "#{Faker.Address.street_name()}::#{gtfs_prefix()}:#{Faker.Internet.slug()}"
+        end
+      )
     end
   end
 end
