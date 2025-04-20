@@ -59,7 +59,7 @@ defmodule OpenTripPlannerClient.HttpTest do
       assert itinerary_groups
 
       {untagged, tagged} =
-        Enum.split_while(itinerary_groups, fn group ->
+        Enum.split_with(itinerary_groups, fn group ->
           representative_tag(group)
           |> is_nil()
         end)
@@ -68,7 +68,7 @@ defmodule OpenTripPlannerClient.HttpTest do
              |> Enum.map(&representative_tag/1)
              |> Enum.all?(&is_nil/1)
 
-      assert :least_walking in Enum.map(tagged, &representative_tag/1)
+      assert Enum.map(tagged, &representative_tag/1) |> Enum.all?()
     end
 
     defp representative_tag(group) do

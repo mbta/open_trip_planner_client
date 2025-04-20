@@ -58,6 +58,7 @@ query TripPlan(
         realTime
         realtimeState
         route { 
+          agency { name }
           gtfsId
           shortName
           longName
@@ -66,6 +67,7 @@ query TripPlan(
           textColor
           desc
           sortOrder
+          mode
         }
         start { ...TimeInfo }
         steps {
@@ -94,7 +96,17 @@ fragment PlaceInfo on Place {
   name
   lat
   lon
-  stop { gtfsId, name, zoneId }
+  stop { 
+    gtfsId, 
+    name
+    url
+    vehicleMode
+    wheelchairBoarding
+    zoneId
+    parentStation {
+      gtfsId
+    }
+  }
 }
 
 fragment TimeInfo on LegTime {

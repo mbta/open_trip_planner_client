@@ -9,11 +9,15 @@ defmodule Mix.Tasks.UpdateFixture do
     Mix.Task.run("app.start")
 
     params =
-      PlanParams.new(%{name: "Alewife", stop_id: "place-alfcl"}, %{
-        name: "Franklin Park Zoo",
-        latitude: 42.305067,
-        longitude: -71.090434
-      })
+      PlanParams.new(
+        %{name: "Alewife", stop_id: "place-alfcl"},
+        %{
+          name: "Franklin Park Zoo",
+          latitude: 42.305067,
+          longitude: -71.090434
+        },
+        wheelchair: true
+      )
 
     {:ok, plan} = OpenTripPlannerClient.send_request(params)
 

@@ -41,7 +41,7 @@ defmodule OpenTripPlannerClient.Schema do
 
       use TypedStruct
 
-      import OpenTripPlannerClient.Schema, only: [schema: 1]
+      import OpenTripPlannerClient.Schema, only: [schema: 1, schema: 2]
     end
   end
 
@@ -73,10 +73,10 @@ defmodule OpenTripPlannerClient.Schema do
   @doc """
   A drop-in replacement for the [`typedstruct`](https://hexdocs.pm/typed_struct/TypedStruct.html) macro, invoked in `use OpenTripPlannerClient.Schema` to automatically enable Jason encoding and implement the Access behaviour.
   """
-  defmacro schema(do_block) do
+  defmacro schema(do_block, args \\ []) do
     quote do
       @derive Jason.Encoder
-      TypedStruct.typedstruct do
+      TypedStruct.typedstruct unquote(args) do
         unquote(do_block)
       end
     end
