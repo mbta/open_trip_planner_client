@@ -6,10 +6,10 @@ defmodule OpenTripPlannerClient.ItineraryGroupTest do
   alias OpenTripPlannerClient.ItineraryGroup
   alias OpenTripPlannerClient.Schema.Itinerary
 
-  describe "from_itineraries/2" do
+  describe "groups_from_itineraries/2" do
     test "can group itineraries separately" do
       itineraries = build_list(3, :itinerary)
-      groups = ItineraryGroup.from_itineraries(itineraries)
+      groups = ItineraryGroup.groups_from_itineraries(itineraries)
 
       for group <- groups do
         assert %ItineraryGroup{} = group
@@ -20,7 +20,7 @@ defmodule OpenTripPlannerClient.ItineraryGroupTest do
       groupable_itineraries = groupable_otp_itineraries(1, 3)
 
       [%ItineraryGroup{} = group] =
-        ItineraryGroup.from_itineraries(groupable_itineraries)
+        ItineraryGroup.groups_from_itineraries(groupable_itineraries)
 
       assert Enum.count(group.itineraries) == Enum.count(groupable_itineraries)
     end
@@ -29,19 +29,30 @@ defmodule OpenTripPlannerClient.ItineraryGroupTest do
       many_groupable_itineraries = groupable_otp_itineraries(1, 20)
 
       [%ItineraryGroup{} = group] =
-        ItineraryGroup.from_itineraries(many_groupable_itineraries)
+        ItineraryGroup.groups_from_itineraries(many_groupable_itineraries)
 
       assert Enum.count(group.itineraries) == 4
+    end
+
+    test "returns desired number of groups" do
+      many_groupable_itineraries = groupable_otp_itineraries(20, 1)
+      num_groups = Faker.random_between(2, 20)
+
+      groups =
+        many_groupable_itineraries
+        |> ItineraryGroup.groups_from_itineraries(num_groups: num_groups)
+
+      assert Enum.count(groups) == num_groups
     end
 
     test "can adjust representative_index" do
       groupable_itineraries = groupable_otp_itineraries(1, 3)
 
       [%ItineraryGroup{} = group1] =
-        ItineraryGroup.from_itineraries(groupable_itineraries, take_from_end: true)
+        ItineraryGroup.groups_from_itineraries(groupable_itineraries, take_from_end: true)
 
       [%ItineraryGroup{} = group2] =
-        ItineraryGroup.from_itineraries(groupable_itineraries, take_from_end: false)
+        ItineraryGroup.groups_from_itineraries(groupable_itineraries, take_from_end: false)
 
       assert group1.representative_index == -1
       assert group2.representative_index == 0
@@ -51,10 +62,10 @@ defmodule OpenTripPlannerClient.ItineraryGroupTest do
       groupable_itineraries = groupable_otp_itineraries(1, 3)
 
       [%ItineraryGroup{} = group1] =
-        ItineraryGroup.from_itineraries(groupable_itineraries, take_from_end: true)
+        ItineraryGroup.groups_from_itineraries(groupable_itineraries, take_from_end: true)
 
       [%ItineraryGroup{} = group2] =
-        ItineraryGroup.from_itineraries(groupable_itineraries, take_from_end: false)
+        ItineraryGroup.groups_from_itineraries(groupable_itineraries, take_from_end: false)
 
       assert group1.time_key == :end
       assert group2.time_key == :start
@@ -64,7 +75,7 @@ defmodule OpenTripPlannerClient.ItineraryGroupTest do
   describe "leg_summaries/1" do
     setup do
       groupable_itineraries = groupable_otp_itineraries(1, 3)
-      group = ItineraryGroup.from_itineraries(groupable_itineraries) |> List.first()
+      group = ItineraryGroup.groups_from_itineraries(groupable_itineraries) |> List.first()
       {:ok, %{group: group}}
     end
 
@@ -90,7 +101,7 @@ defmodule OpenTripPlannerClient.ItineraryGroupTest do
           legs: build_list(1, :transit_leg, route: related_route, from: from, to: to)
         )
 
-      [group] = [itinerary, related_itinerary] |> ItineraryGroup.from_itineraries()
+      [group] = [itinerary, related_itinerary] |> ItineraryGroup.groups_from_itineraries()
       assert [%{routes: grouped_routes}] = ItineraryGroup.leg_summaries(group)
       assert Enum.sort(grouped_routes) == Enum.sort([route, related_route])
     end
@@ -101,7 +112,7 @@ defmodule OpenTripPlannerClient.ItineraryGroupTest do
 
       [group] =
         build_list(2, :itinerary, legs: [long_leg, short_leg, long_leg])
-        |> ItineraryGroup.from_itineraries()
+        |> ItineraryGroup.groups_from_itineraries()
 
       assert [%{walk_minutes: 10.0}, %{walk_minutes: 10.0}] = ItineraryGroup.leg_summaries(group)
     end

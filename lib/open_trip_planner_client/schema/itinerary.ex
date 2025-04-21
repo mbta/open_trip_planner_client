@@ -39,10 +39,10 @@ defmodule OpenTripPlannerClient.Schema.Itinerary do
   def accessible?(%__MODULE__{accessibility_score: 1.0}), do: true
 
   def accessible?(%__MODULE__{legs: legs}) do
-    all_mbta_legs?(legs)
+    all_mbta_bus_legs?(legs)
   end
 
-  defp all_mbta_legs?(legs) do
+  defp all_mbta_bus_legs?(legs) do
     legs
     |> Enum.filter(& &1.transit_leg)
     |> Enum.all?(&(&1.route.type == 3 && &1.agency.name == "MBTA"))

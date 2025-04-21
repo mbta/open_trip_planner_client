@@ -22,22 +22,29 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
   ]
 
   @max_per_group 4
+  @num_groups 5
   @short_walk_threshold_minutes 5
 
   @doc """
-  From a large list of itineraries, collect them into 5 groups of at most
+  From a large list of itineraries, collect them into #{@num_groups} groups of at most
   #{@max_per_group} itineraries each, sorting the groups in favor of tagged
-  groups first
+  groups first.
+
+  A different numbers of groups can be specified via the second argument.
+
+  ```elixir
+  _ = groups_from_itineraries(itineraries, num_groups: 8)
+  ```
   """
-  @spec from_itineraries([Itinerary.t()], Keyword.t()) :: [%__MODULE__{}]
-  def from_itineraries(itineraries, opts \\ []) do
+  @spec groups_from_itineraries([Itinerary.t()], Keyword.t()) :: [%__MODULE__{}]
+  def groups_from_itineraries(itineraries, opts \\ []) do
     itineraries
     |> Enum.group_by(&Itinerary.group_identifier/1)
     |> Enum.map(&truncate_list(&1, opts))
     |> Enum.reject(&Enum.empty?/1)
     |> Enum.map(&to_group(&1, opts))
     |> Enum.sort_by(&tag_priority/1)
-    |> Enum.take(5)
+    |> Enum.take(Keyword.get(opts, :num_groups, @num_groups))
   end
 
   defp truncate_list({_, grouped_itineraries}, opts) do
