@@ -12,7 +12,8 @@ defmodule OpenTripPlannerClient.MixProject do
       deps: deps(),
       dialyzer: [plt_add_apps: [:mix]],
       aliases: [
-        docs: ["docs --formatter html --output docs"]
+        docs: ["docs --formatter html --output docs"],
+        "test.ci": ["test --exclude flaky --color --cover --trace"]
       ],
       test_coverage: [
         ignore_modules: [
@@ -20,7 +21,8 @@ defmodule OpenTripPlannerClient.MixProject do
           ~r/Jason.Encoder/,
           ~r/OpenTripPlannerClient.Schema\./,
           ~r/Nestru/
-        ]
+        ],
+        summary: [threshold: 90]
       ],
 
       # Docs
@@ -55,6 +57,10 @@ defmodule OpenTripPlannerClient.MixProject do
     [
       extra_applications: [:logger]
     ]
+  end
+
+  def cli do
+    [preferred_envs: ["test.ci": :test]]
   end
 
   defp deps do

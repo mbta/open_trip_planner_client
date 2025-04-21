@@ -22,7 +22,7 @@ jobs:
           otp-version: 27.0
           elixir-version: 1.17.0
       - run: mix deps.get
-      - run: mix test --cover
+      - run: mix test.ci
       - run: mix docs
       - uses: actions/upload-pages-artifact@v3
         with:
