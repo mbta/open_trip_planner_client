@@ -96,6 +96,36 @@ defmodule OpenTripPlannerClient.PlanParams do
   @type wheelchair :: boolean()
 
   @typedoc """
+  Specifying an origin or destination for trip planning.
+  """
+  @type place_map ::
+          %{name: String.t(), stop_id: String.t()}
+          | %{name: String.t(), latitude: float(), longitude: float()}
+
+  @typedoc """
+  Customization options for trip planning.
+
+  * `:arrive_by` - Whether to plan to arrive at a certain time, or, if set to
+    `false`, depart at a certain time. Defalts to false.
+  * `:datetime` - The DateTime to depart from the origin or arrive at the
+    destination. Defaults to now.
+  * `:modes` - The transit modes to be used in the plan. Defaults to
+    [:WALK, :TRANSIT]
+  * `:num_itineraries` - The maximum number of itineraries to return. Defaults
+    to 5.
+  * `:wheelchair` - Whether to limit itineraries to those that are wheelchair 
+    accessible. Defaults to false.
+
+  """
+  @type opts :: [
+          arrive_by: boolean(),
+          datetime: DateTime.t(),
+          modes: [mode_t()],
+          num_itineraries: non_neg_integer(),
+          wheelchair: boolean()
+        ]
+
+  @typedoc """
   Arguments for the OTP plan query.
   """
   @type t :: %__MODULE__{
@@ -112,26 +142,40 @@ defmodule OpenTripPlannerClient.PlanParams do
   @spec modes :: [mode_t()]
   def modes, do: @modes
 
-  @spec new(map()) :: t()
-  def new(params \\ %{}) do
-    %__MODULE__{}
-    |> Map.put(:date, to_date_param(OpenTripPlannerClient.Util.local_now()))
-    |> Map.put(:time, to_time_param(OpenTripPlannerClient.Util.local_now()))
-    |> struct(params)
+  @doc """
+  Arguments to send to OpenTripPlanner's `plan` query. 
+
+  Defaults to 5 itineraries departing at the current time via walking or any mode of transit.
+  """
+  @spec new(place_map(), place_map(), opts()) :: t()
+  def new(from, to, opts \\ []) do
+    datetime = Keyword.get(opts, :datetime, OpenTripPlannerClient.Util.local_now())
+    modes = Keyword.get(opts, :modes, [:WALK, :TRANSIT])
+
+    %__MODULE__{
+      fromPlace: to_place_param(from),
+      toPlace: to_place_param(to),
+      arriveBy: Keyword.get(opts, :arrive_by, false),
+      date: to_date_param(datetime),
+      numItineraries: Keyword.get(opts, :num_itineraries, 5),
+      time: to_time_param(datetime),
+      transportModes: to_modes_param(modes),
+      wheelchair: Keyword.get(opts, :wheelchair, false)
+    }
   end
 
-  @spec to_place_param(map()) :: place()
-  def to_place_param(%{name: name, stop_id: stop_id}) when is_binary(stop_id) do
+  @spec to_place_param(place_map()) :: place()
+  defp to_place_param(%{name: name, stop_id: stop_id}) when is_binary(stop_id) do
     "#{name}::mbta-ma-us:#{stop_id}"
   end
 
-  def to_place_param(%{name: name, latitude: latitude, longitude: longitude})
-      when is_float(latitude) and is_float(longitude) do
+  defp to_place_param(%{name: name, latitude: latitude, longitude: longitude})
+       when is_float(latitude) and is_float(longitude) do
     "#{name}::#{latitude},#{longitude}"
   end
 
   @spec to_modes_param([mode_t()]) :: transport_modes()
-  def to_modes_param(modes) do
+  defp to_modes_param(modes) do
     modes
     |> then(fn modes ->
       if :SUBWAY in modes do
@@ -144,12 +188,12 @@ defmodule OpenTripPlannerClient.PlanParams do
   end
 
   @spec to_date_param(DateTime.t()) :: date()
-  def to_date_param(datetime) do
+  defp to_date_param(datetime) do
     format_datetime(datetime, "{YYYY}-{0M}-{0D}")
   end
 
   @spec to_time_param(DateTime.t()) :: time()
-  def to_time_param(datetime) do
+  defp to_time_param(datetime) do
     format_datetime(datetime, "{h12}:{m}{am}")
   end
 
