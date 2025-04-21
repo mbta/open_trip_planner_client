@@ -14,9 +14,11 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
     alias OpenTripPlannerClient.Schema.{
       Agency,
       Geometry,
+      IntermediateStop,
       Itinerary,
       Leg,
       LegTime,
+      ParentStop,
       Place,
       Route,
       Step,
@@ -187,14 +189,7 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
           build(:place, %{
             stop: build(:stop, %{gtfs_id: gtfs_prefix(agency.name) <> Faker.Internet.slug()})
           }),
-        intermediate_stops:
-          build_list(3, :stop, %{
-            gtfs_id: fn ->
-              sequence(:intermediate_stop_id, fn _ ->
-                gtfs_prefix(agency.name) <> Faker.Internet.slug()
-              end)
-            end
-          }),
+        intermediate_stops: build_list(3, :intermediate_stop),
         mode: Faker.Util.pick([:TRANSIT, :RAIL, :SUBWAY, :BUS]),
         real_time: true,
         realtime_state: Faker.Util.pick(Leg.realtime_state()),
@@ -261,11 +256,37 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
     end
 
     def stop_factory do
+      prefix = gtfs_prefix()
+
       %Stop{
-        gtfs_id: gtfs_prefix() <> Faker.Internet.slug(),
+        gtfs_id: prefix <> Faker.Internet.slug(),
         name: Faker.Address.city(),
+        url: Faker.Internet.url(),
+        vehicle_mode: Faker.Util.pick(PlanParams.modes()),
+        wheelchair_boarding: Faker.Util.pick(Stop.wheelchair_boarding()),
         zone_id:
-          [gtfs_prefix() <> Faker.Util.pick(["1A", "1", "2", "3"]), nil] |> Faker.Util.pick()
+          Faker.Util.pick([
+            "CR-zone-1A",
+            "CR-zone-1",
+            "CR-zone-2",
+            "CR-zone-3",
+            "RapidTransit",
+            "LocalBus",
+            nil
+          ]),
+        parent_station: build(:parent_stop, gtfs_id: prefix <> Faker.Internet.slug())
+      }
+    end
+
+    def intermediate_stop_factory do
+      %IntermediateStop{
+        name: Faker.Address.city()
+      }
+    end
+
+    def parent_stop_factory do
+      %ParentStop{
+        gtfs_id: gtfs_prefix() <> Faker.Internet.slug()
       }
     end
 

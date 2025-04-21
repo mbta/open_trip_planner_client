@@ -10,7 +10,17 @@ defmodule OpenTripPlannerClient.Schema.Leg do
   use OpenTripPlannerClient.Schema
 
   alias OpenTripPlannerClient.PlanParams
-  alias OpenTripPlannerClient.Schema.{Agency, Geometry, LegTime, Place, Route, Step, Stop, Trip}
+
+  alias OpenTripPlannerClient.Schema.{
+    Agency,
+    Geometry,
+    IntermediateStop,
+    LegTime,
+    Place,
+    Route,
+    Step,
+    Trip
+  }
 
   @realtime_state [
     :SCHEDULED,
@@ -64,7 +74,7 @@ defmodule OpenTripPlannerClient.Schema.Leg do
              agency: Agency,
              end: LegTime,
              from: Place,
-             intermediate_stops: [Stop],
+             intermediate_stops: [IntermediateStop],
              leg_geometry: Geometry,
              mode: &__MODULE__.to_atom/1,
              realtime_state: &__MODULE__.to_atom/1,
@@ -81,7 +91,7 @@ defmodule OpenTripPlannerClient.Schema.Leg do
     field(:end, LegTime.t(), @nonnull_field)
     field(:from, Place.t(), @nonnull_field)
     field(:headsign, String.t())
-    field(:intermediate_stops, [Stop.t()])
+    field(:intermediate_stops, [IntermediateStop.t()])
     field(:leg_geometry, Geometry.t())
     field(:mode, PlanParams.mode_t())
     field(:real_time, boolean())
