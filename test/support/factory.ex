@@ -235,6 +235,7 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
 
     def route_factory do
       %Route{
+        agency: build(:agency),
         gtfs_id: gtfs_prefix() <> Faker.Internet.slug(),
         short_name: Faker.Person.suffix(),
         long_name: Faker.Color.fancy_name(),
@@ -242,7 +243,8 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
         color: Faker.Color.rgb_hex(),
         text_color: Faker.Color.rgb_hex(),
         desc: Faker.Company.catch_phrase(),
-        sort_order: Faker.random_between(100, 1000)
+        sort_order: Faker.random_between(100, 1000),
+        mode: Faker.Util.pick(PlanParams.modes())
       }
     end
 

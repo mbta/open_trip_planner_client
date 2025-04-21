@@ -11,6 +11,9 @@ defmodule OpenTripPlannerClient.Schema.Route do
 
   use OpenTripPlannerClient.Schema
 
+  alias OpenTripPlannerClient.PlanParams
+  alias OpenTripPlannerClient.Schema.Agency
+
   @typedoc """
   Short name of the route, e.g. SL4
   """
@@ -45,7 +48,7 @@ defmodule OpenTripPlannerClient.Schema.Route do
   """
   @type hex_color :: String.t()
 
-  @derive Nestru.Decoder
+  @derive {Nestru.Decoder, hint: %{agency: Agency, mode: &__MODULE__.to_atom/1}}
   schema do
     field(:gtfs_id, gtfs_id(), @nonnull_field)
     field(:short_name, short_name())
@@ -55,8 +58,16 @@ defmodule OpenTripPlannerClient.Schema.Route do
     field(:text_color, hex_color())
     field(:desc, desc())
     field(:sort_order, non_neg_integer())
+    field(:mode, PlanParams.mode_t())
+    field(:agency, Agency.t())
   end
 
   @spec gtfs_route_type :: [gtfs_route_type()]
   def gtfs_route_type, do: @gtfs_route_type
+
+  @spec to_atom(any()) :: {:ok, any()}
+  def to_atom(string) when is_binary(string),
+    do: {:ok, OpenTripPlannerClient.Util.to_existing_atom(string)}
+
+  def to_atom(other), do: {:ok, other}
 end
