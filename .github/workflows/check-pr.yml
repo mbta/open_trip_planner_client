@@ -34,7 +34,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
-      - run: mix credo diff main -a --strict
+      - run: mix credo diff --from-git-merge-base main -a --strict
 
   dialyzer:
     runs-on: ubuntu-latest
