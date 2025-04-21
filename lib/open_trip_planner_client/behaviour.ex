@@ -70,7 +70,7 @@ defmodule OpenTripPlannerClient.Behaviour do
           | planner_error_code
           | String.t()
 
-  @type plan_result :: {:ok, [map()]} | {:error, error()}
+  @type plan_result :: {:ok, [OpenTripPlannerClient.ItineraryGroup.t()]} | {:error, error()}
   @callback plan(params :: PlanParams.t()) :: plan_result()
   @callback plan(
               params :: PlanParams.t(),
