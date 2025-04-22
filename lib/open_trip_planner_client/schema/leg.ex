@@ -107,14 +107,38 @@ defmodule OpenTripPlannerClient.Schema.Leg do
   To be grouped together, legs must share these characteristics:
   - Same origin and destination
   - Same :transit_leg value (e.g. walking legs don't get grouped with transit legs)
-  - Same transit route.type, except for rail replacement buses
+  - Same transit mode, or using rail replacement buses
   """
   @spec group_identifier(__MODULE__.t()) :: tuple()
   def group_identifier(%__MODULE__{transit_leg: false} = leg) do
     {:WALK, leg.from.name, leg.to.name}
   end
 
-  def group_identifier(%__MODULE__{route: %Route{desc: desc, type: type}} = leg) do
-    {type, desc == "Rail Replacement Bus", leg.from.name, leg.to.name}
+  def group_identifier(%__MODULE__{agency: %Agency{name: agency_name}} = leg)
+      when agency_name != "MBTA" do
+    {agency_name, leg.from.name, leg.to.name}
+  end
+
+  def group_identifier(%__MODULE__{route: %Route{desc: "Rail Replacement Bus"}} = leg) do
+    {:shuttle, leg.from.name, leg.to.name}
+  end
+
+  def group_identifier(%__MODULE__{route: %Route{type: type}} = leg) when type in [0, 1] do
+    {:subway, leg.from.name, leg.to.name}
+  end
+
+  def group_identifier(%__MODULE__{route: %Route{short_name: short_name, type: 3}} = leg) do
+    mode =
+      if String.starts_with?(short_name, "SL") do
+        :silver_line
+      else
+        :bus
+      end
+
+    {mode, leg.from.name, leg.to.name}
+  end
+
+  def group_identifier(leg) do
+    {leg.route.type, leg.from.name, leg.to.name}
   end
 end
