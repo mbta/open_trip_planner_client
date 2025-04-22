@@ -34,6 +34,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
+      - run: git fetch origin main:main
       - run: mix credo diff --from-git-merge-base main -a --strict
 
   dialyzer:
