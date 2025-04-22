@@ -19,7 +19,6 @@ defmodule OpenTripPlannerClient.MixProject do
         ignore_modules: [
           Mix.Tasks.UpdateFixture,
           ~r/Jason.Encoder/,
-          ~r/OpenTripPlannerClient.Schema\./,
           ~r/Nestru/
         ],
         summary: [threshold: 90]

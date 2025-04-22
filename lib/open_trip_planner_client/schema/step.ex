@@ -93,6 +93,9 @@ defmodule OpenTripPlannerClient.Schema.Step do
   @spec to_atom(any()) :: {:ok, any()}
   def to_atom(term), do: {:ok, OpenTripPlannerClient.Util.to_uppercase_atom(term)}
 
+  @doc """
+  Generate a friendly description of this walking step.
+  """
   @spec walk_summary(t()) :: String.t()
   def walk_summary(%__MODULE__{relative_direction: :DEPART, street_name: "Transfer"}),
     do: "Transfer"
