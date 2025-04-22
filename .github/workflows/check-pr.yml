@@ -33,9 +33,10 @@ jobs:
     needs: setup
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: ./.github/actions/setup
-      - run: git fetch origin main:main
-      - run: mix credo diff --from-git-merge-base main -a --strict
+      - run: mix credo diff --from-git-merge-base ${{ github.event.pull_request.base.sha }} -a --strict
 
   dialyzer:
     runs-on: ubuntu-latest
