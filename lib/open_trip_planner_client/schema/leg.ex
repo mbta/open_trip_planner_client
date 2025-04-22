@@ -102,4 +102,19 @@ defmodule OpenTripPlannerClient.Schema.Leg do
     do: {:ok, OpenTripPlannerClient.Util.to_existing_atom(string)}
 
   def to_atom(other), do: {:ok, other}
+
+  @doc """
+  To be grouped together, legs must share these characteristics:
+  - Same origin and destination
+  - Same :transit_leg value (e.g. walking legs don't get grouped with transit legs)
+  - Same transit route.type, except for rail replacement buses
+  """
+  @spec group_identifier(__MODULE__.t()) :: tuple()
+  def group_identifier(%__MODULE__{transit_leg: false} = leg) do
+    {:WALK, leg.from.name, leg.to.name}
+  end
+
+  def group_identifier(%__MODULE__{route: %Route{desc: desc, type: type}} = leg) do
+    {type, desc == "Rail Replacement Bus", leg.from.name, leg.to.name}
+  end
 end

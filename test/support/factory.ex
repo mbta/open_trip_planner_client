@@ -227,6 +227,17 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
       }
     end
 
+    def place_with_stop_factory do
+      stop = build(:stop)
+
+      %Place{
+        name: stop.name,
+        lat: Faker.Address.latitude(),
+        lon: Faker.Address.longitude(),
+        stop: stop
+      }
+    end
+
     def route_factory do
       %Route{
         gtfs_id: gtfs_prefix() <> Faker.Internet.slug(),
@@ -337,6 +348,71 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
           "#{Faker.Address.street_name()}::#{gtfs_prefix()}:#{Faker.Internet.slug()}"
         end
       )
+    end
+
+    def mbta_bus_leg_factory(attrs) do
+      agency = build(:agency, %{name: "MBTA"})
+      trip_gtfs_id = gtfs_prefix(agency.name) <> Faker.Internet.slug()
+
+      build(:leg, %{
+        agency: agency,
+        from:
+          build(:place, %{
+            stop: build(:stop, %{gtfs_id: gtfs_prefix(agency.name) <> Faker.Internet.slug()})
+          }),
+        intermediate_stops:
+          build_list(3, :stop, %{
+            gtfs_id: fn ->
+              sequence(:intermediate_stop_id, fn _ ->
+                gtfs_prefix(agency.name) <> Faker.Internet.slug()
+              end)
+            end
+          }),
+        mode: Faker.Util.pick([:TRANSIT, :RAIL, :SUBWAY, :BUS]),
+        real_time: true,
+        realtime_state: Faker.Util.pick(Leg.realtime_state()),
+        route: build(:route, type: 3),
+        to:
+          build(:place, %{
+            stop: build(:stop, %{gtfs_id: gtfs_prefix(agency.name) <> Faker.Internet.slug()})
+          }),
+        trip: build(:trip, %{gtfs_id: trip_gtfs_id}),
+        transit_leg: true
+      })
+      |> merge_attributes(attrs)
+      |> evaluate_lazy_attributes()
+    end
+
+    @doc """
+    Returns a list of itineraries that can be grouped.
+
+    You can pass in the number of groups you want and the number of itineraries in each group.
+    """
+    def groupable_otp_itineraries(group_count \\ 2, itinerary_count \\ 1) do
+      Enum.map(1..group_count, fn _ ->
+        otp_itineraries(itinerary_count)
+      end)
+      |> List.flatten()
+      |> Enum.shuffle()
+    end
+
+    # Create a number of otp itineraries with the same two random legs.
+    defp otp_itineraries(itinerary_count) do
+      [a, b, c] = build_list(3, :place_with_stop)
+      a_b_leg = build(:transit_leg, from: a, to: b)
+      b_c_leg = build(:transit_leg, from: b, to: c)
+      build_list(itinerary_count, :itinerary, legs: [a_b_leg, b_c_leg])
+    end
+
+    def itinerary_group_factory(attrs) do
+      itineraries = attrs[:itineraries] || build_list(5, :itinerary)
+      index = attrs[:representative_index] || Faker.random_between(0, Enum.count(itineraries) - 1)
+
+      %OpenTripPlannerClient.ItineraryGroup{
+        itineraries: itineraries,
+        representative_index: index,
+        time_key: attrs[:time_key] || Faker.Util.pick([:start, :end])
+      }
     end
   end
 end
