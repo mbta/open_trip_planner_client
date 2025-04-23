@@ -127,15 +127,12 @@ defmodule OpenTripPlannerClient.Schema.Leg do
     {:subway, leg.from.name, leg.to.name}
   end
 
-  def group_identifier(%__MODULE__{route: %Route{short_name: short_name, type: 3}} = leg) do
-    mode =
-      if String.starts_with?(short_name, "SL") do
-        :silver_line
-      else
-        :bus
-      end
+  def group_identifier(%__MODULE__{route: %Route{short_name: "SL" <> _, type: 3}} = leg) do
+    {:silver_line, leg.from.name, leg.to.name}
+  end
 
-    {mode, leg.from.name, leg.to.name}
+  def group_identifier(%__MODULE__{route: %Route{type: 3}} = leg) do
+    {:bus, leg.from.name, leg.to.name}
   end
 
   def group_identifier(leg) do
