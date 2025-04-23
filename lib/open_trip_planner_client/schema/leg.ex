@@ -127,10 +127,6 @@ defmodule OpenTripPlannerClient.Schema.Leg do
     {:subway, leg.from.name, leg.to.name}
   end
 
-  def group_identifier(%__MODULE__{route: %Route{short_name: "SL" <> _, type: 3}} = leg) do
-    {:silver_line, leg.from.name, leg.to.name}
-  end
-
   def group_identifier(%__MODULE__{route: %Route{type: 3}} = leg) do
     {:bus, leg.from.name, leg.to.name}
   end
