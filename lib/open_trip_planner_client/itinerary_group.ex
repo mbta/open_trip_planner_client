@@ -83,6 +83,7 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
     legs
     |> Enum.uniq_by(&combined_leg_to_tuple/1)
     |> Enum.reduce(%{walk_minutes: 0, routes: []}, &summarize_legs/2)
+    |> Map.update!(:walk_minutes, &(Kernel.round(&1) |> Kernel.max(1)))
   end
 
   defp combined_leg_to_tuple(%Leg{transit_leg: false} = leg) do

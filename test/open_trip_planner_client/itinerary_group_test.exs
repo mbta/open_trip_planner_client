@@ -114,7 +114,29 @@ defmodule OpenTripPlannerClient.ItineraryGroupTest do
         build_list(2, :itinerary, legs: [long_leg, short_leg, long_leg])
         |> ItineraryGroup.groups_from_itineraries()
 
-      assert [%{walk_minutes: 10.0}, %{walk_minutes: 10.0}] = ItineraryGroup.leg_summaries(group)
+      assert [%{walk_minutes: 10}, %{walk_minutes: 10}] = ItineraryGroup.leg_summaries(group)
+    end
+
+    test "rounds minutes to minimum 1" do
+      seconds = Faker.random_between(1, 30)
+      very_short_leg = build(:walking_leg, duration: seconds)
+
+      [group] =
+        build_list(2, :itinerary, legs: [very_short_leg])
+        |> ItineraryGroup.groups_from_itineraries()
+
+      assert [%{walk_minutes: 1}] = ItineraryGroup.leg_summaries(group)
+    end
+
+    test "rounds minutes to nearest integer" do
+      leg = build(:walking_leg, duration: Faker.random_uniform() * 600)
+
+      [group] =
+        build_list(2, :itinerary, legs: [leg])
+        |> ItineraryGroup.groups_from_itineraries()
+
+      assert [%{walk_minutes: minutes}] = ItineraryGroup.leg_summaries(group)
+      assert is_integer(minutes)
     end
   end
 
