@@ -60,7 +60,7 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
   end
 
   defp to_group(grouped_itineraries, opts) do
-    representative_index = if(opts[:take_from_end], do: -1, else: 0)
+    representative_index = if(opts[:take_from_end], do: length(grouped_itineraries) - 1, else: 0)
     time_key = if(opts[:take_from_end], do: :end, else: :start)
 
     %__MODULE__{

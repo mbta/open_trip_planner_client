@@ -54,7 +54,7 @@ defmodule OpenTripPlannerClient.ItineraryGroupTest do
       [%ItineraryGroup{} = group2] =
         ItineraryGroup.groups_from_itineraries(groupable_itineraries, take_from_end: false)
 
-      assert group1.representative_index == -1
+      assert group1.representative_index == length(group1.itineraries) - 1
       assert group2.representative_index == 0
     end
 

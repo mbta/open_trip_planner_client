@@ -3,7 +3,7 @@ defmodule LegTest do
 
   import OpenTripPlannerClient.Test.Support.Factory
 
-  alias OpenTripPlannerClient.Schema.{Leg, Route}
+  alias OpenTripPlannerClient.Schema.Leg
 
   describe "group_identifier/1" do
     test "different value for legs between the same places using transit vs walking" do
