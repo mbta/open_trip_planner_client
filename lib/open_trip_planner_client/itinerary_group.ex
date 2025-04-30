@@ -73,7 +73,9 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
   @spec leg_summaries(__MODULE__.t()) :: [%{walk_minutes: non_neg_integer(), routes: [Route.t()]}]
   def leg_summaries(%__MODULE__{itineraries: itineraries}) do
     itineraries
-    |> Enum.map(& &1.legs)
+    |> Enum.map(fn %Itinerary{legs: legs} ->
+      Enum.reject(legs, &Itinerary.short_walking_leg?/1)
+    end)
     |> Enum.zip_with(&Function.identity/1)
     |> Enum.map(&aggregate_legs/1)
     |> remove_short_intermediate_walks()
