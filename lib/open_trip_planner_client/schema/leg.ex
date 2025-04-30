@@ -115,9 +115,14 @@ defmodule OpenTripPlannerClient.Schema.Leg do
 
   @doc """
   To be grouped together, legs must share these characteristics:
+  - Same transit agency
   - Same origin and destination
   - Same :transit_leg value (e.g. walking legs don't get grouped with transit legs)
-  - Same transit mode, or using rail replacement buses
+  - Similar transit mode, where
+      - rail replacement buses are treated independently
+      - each subway line is treated independently
+      - branches in a line can be grouped together (GL B/C/D/E, SL 1/2/3)
+      - SL4/5 are grouped with buses
   """
   @spec group_identifier(__MODULE__.t()) :: tuple()
   def group_identifier(%__MODULE__{transit_leg: false} = leg) do
@@ -133,11 +138,32 @@ defmodule OpenTripPlannerClient.Schema.Leg do
     {:shuttle, leg.from.name, leg.to.name}
   end
 
-  def group_identifier(%__MODULE__{route: %Route{type: type}} = leg) when type in [0, 1] do
-    {:subway, leg.from.name, leg.to.name}
+  def group_identifier(%__MODULE__{route: %Route{type: type} = route} = leg)
+      when type in [0, 1] do
+    route_id = mbta_id(route)
+
+    if String.starts_with?(route_id, "Green") do
+      {:green_line, leg.from.name, leg.to.name}
+    else
+      {route_id, leg.from.name, leg.to.name}
+    end
+  end
+
+  def group_identifier(%__MODULE__{route: %Route{type: 3} = route} = leg) do
+    route_id = mbta_id(route)
+    silver_line_rapid_transit_ids = ~w(741 742 743)
+
+    if route_id in silver_line_rapid_transit_ids do
+      {:silver_line, leg.from.name, leg.to.name}
+    else
+      {leg.route.type, leg.from.name, leg.to.name}
+    end
   end
 
   def group_identifier(leg) do
     {leg.route.type, leg.from.name, leg.to.name}
   end
+
+  defp mbta_id(%{gtfs_id: "mbta-ma-us:" <> id}), do: id
+  defp mbta_id(_), do: nil
 end
