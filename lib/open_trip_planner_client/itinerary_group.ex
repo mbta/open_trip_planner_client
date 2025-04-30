@@ -23,7 +23,7 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
 
   @max_per_group 4
   @num_groups 5
-  @short_walk_threshold_minutes 5
+  @short_walk_threshold_seconds 300
 
   @doc """
   From a large list of itineraries, collect them into #{@num_groups} groups of at most
@@ -73,10 +73,9 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
   @spec leg_summaries(__MODULE__.t()) :: [%{walk_minutes: non_neg_integer(), routes: [Route.t()]}]
   def leg_summaries(%__MODULE__{itineraries: itineraries}) do
     itineraries
-    |> Enum.map(& &1.legs)
+    |> Enum.map(&remove_short_intermediate_walks(&1.legs))
     |> Enum.zip_with(&Function.identity/1)
     |> Enum.map(&aggregate_legs/1)
-    |> remove_short_intermediate_walks()
   end
 
   defp aggregate_legs(legs) do
@@ -109,12 +108,18 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
     end)
   end
 
-  defp remove_short_intermediate_walks(summarized_legs) do
-    summarized_legs
+  defp remove_short_intermediate_walks(legs) do
+    legs
     |> Enum.with_index()
-    |> Enum.reject(fn {leg, index} ->
-      index > 0 && index < length(summarized_legs) - 1 &&
-        (leg.routes == [] && leg.walk_minutes < @short_walk_threshold_minutes)
+    |> Enum.reject(fn
+      {_, index} when index == 0 or index == length(legs) - 1 ->
+        false
+
+      {%Leg{transit_leg: false, duration: duration}, _} ->
+        duration < @short_walk_threshold_seconds
+
+      _ ->
+        false
     end)
     |> Enum.map(fn {leg, _} -> leg end)
   end
