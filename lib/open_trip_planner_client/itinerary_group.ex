@@ -50,11 +50,11 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
   defp truncate_list({_, grouped_itineraries}, opts) do
     if opts[:take_from_end] do
       grouped_itineraries
-      |> ItineraryTag.sort_tagged(:end)
+      |> Enum.sort_by(&DateTime.to_unix(&1.end))
       |> Enum.take(-@max_per_group)
     else
       grouped_itineraries
-      |> ItineraryTag.sort_tagged(:start)
+      |> Enum.sort_by(&DateTime.to_unix(&1.start))
       |> Enum.take(@max_per_group)
     end
   end
