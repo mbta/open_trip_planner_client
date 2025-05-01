@@ -4,7 +4,7 @@ defmodule OpenTripPlannerClient.ItineraryGroupTest do
   import OpenTripPlannerClient.Test.Support.Factory
 
   alias OpenTripPlannerClient.ItineraryGroup
-  alias OpenTripPlannerClient.Schema.Itinerary
+  alias OpenTripPlannerClient.Schema.{Itinerary, Route}
 
   describe "groups_from_itineraries/2" do
     test "can group itineraries separately" do
@@ -137,6 +137,120 @@ defmodule OpenTripPlannerClient.ItineraryGroupTest do
 
       assert [%{walk_minutes: minutes}] = ItineraryGroup.leg_summaries(group)
       assert is_integer(minutes)
+    end
+
+    test "summarizing across many itineraries (walk_minutes)" do
+      legs =
+        build_list(3, :walking_leg)
+        |> Enum.with_index(fn leg, index ->
+          # legs of 5 minutes, 10 minutes, 15 minutes
+          Map.put(leg, :duration, 300 * (index + 1))
+        end)
+
+      group =
+        %ItineraryGroup{
+          itineraries: build_list(20, :itinerary, legs: legs)
+        }
+
+      assert [
+               %{walk_minutes: 5, routes: []},
+               %{walk_minutes: 10, routes: []},
+               %{walk_minutes: 15, routes: []}
+             ] = ItineraryGroup.leg_summaries(group)
+    end
+
+    test "summarizing across many itineraries (routes)" do
+      grouped_route_names = [
+        Faker.Util.sample_uniq(10, fn -> Faker.Util.upper_letter() end),
+        Faker.Util.sample_uniq(10, fn -> Faker.Util.lower_letter() end),
+        Faker.Util.sample_uniq(10, fn -> Faker.Util.digit() end)
+      ]
+
+      num_itineraries = Faker.random_between(3, 10)
+
+      group =
+        %ItineraryGroup{
+          itineraries:
+            build_list(num_itineraries, :itinerary,
+              legs: fn ->
+                [
+                  build(:transit_leg,
+                    route: fn ->
+                      build(:route,
+                        short_name: fn ->
+                          grouped_route_names
+                          |> Enum.at(0)
+                          |> Faker.Util.pick()
+                        end
+                      )
+                    end
+                  ),
+                  build(:transit_leg,
+                    route: fn ->
+                      build(:route,
+                        short_name: fn ->
+                          grouped_route_names
+                          |> Enum.at(1)
+                          |> Faker.Util.pick()
+                        end
+                      )
+                    end
+                  ),
+                  build(:transit_leg,
+                    route: fn ->
+                      build(:route,
+                        short_name: fn ->
+                          grouped_route_names
+                          |> Enum.at(2)
+                          |> Faker.Util.pick()
+                        end
+                      )
+                    end
+                  )
+                ]
+              end
+            )
+        }
+
+      assert [
+               %{walk_minutes: 1, routes: routes_group_0},
+               %{walk_minutes: 1, routes: routes_group_1},
+               %{walk_minutes: 1, routes: routes_group_2}
+             ] = ItineraryGroup.leg_summaries(group)
+
+      for {grouped_routes, index} <-
+            Enum.with_index([routes_group_0, routes_group_1, routes_group_2]) do
+        assert length(grouped_routes) > 0
+        assert length(grouped_routes) <= num_itineraries
+
+        assert Enum.all?(grouped_routes, fn %Route{short_name: name} ->
+                 Enum.at(grouped_route_names, index)
+                 |> Enum.member?(name)
+               end)
+      end
+    end
+
+    test "handles not quite identical grouped itineraries" do
+      group =
+        %ItineraryGroup{
+          itineraries:
+            build_list(5, :itinerary, legs: fn -> build_list(2, :transit_leg) end) ++
+              build_list(5, :itinerary,
+                legs: fn ->
+                  [
+                    build(:transit_leg),
+                    build(:walking_leg, duration: 60),
+                    build(:transit_leg)
+                  ]
+                end
+              )
+        }
+
+      # omits the short leg
+      assert [
+               %{walk_minutes: 1, routes: [_ | _]},
+               %{walk_minutes: 1, routes: [_ | _]}
+             ] = ItineraryGroup.leg_summaries(group)
     end
   end
 

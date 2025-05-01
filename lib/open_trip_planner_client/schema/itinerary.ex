@@ -64,10 +64,10 @@ defmodule OpenTripPlannerClient.Schema.Itinerary do
     {accessible?(itinerary), leg_groups}
   end
 
-  def short_walking_leg?(%Leg{transit_leg: false, distance: meters}) do
+  defp short_walking_leg?(%Leg{transit_leg: false, distance: meters}) do
     miles = Float.ceil(meters / 1609.34, 1)
     miles <= 0.2
   end
 
-  def short_walking_leg?(_), do: false
+  defp short_walking_leg?(_), do: false
 end
