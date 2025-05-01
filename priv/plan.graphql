@@ -16,15 +16,10 @@ query TripPlan(
     arriveBy: $arriveBy
     wheelchair: $wheelchair
     transportModes: $transportModes
+    numItineraries: $numItineraries
 
     # A 2-hour search window accomodates infrequent routes
     searchWindow: 7200
-
-    # Increased from 3 to offer more itineraries for potential post-processing
-    numItineraries: $numItineraries
-
-    # Increased from 2.0 to reduce number of itineraries with significant walking
-    walkReluctance: 5.0
 
     # Theoretically can be configured in the future for visitors using translation?
     locale: "en"
