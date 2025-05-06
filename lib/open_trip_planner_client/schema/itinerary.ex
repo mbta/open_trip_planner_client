@@ -17,6 +17,8 @@ defmodule OpenTripPlannerClient.Schema.Itinerary do
   """
   @type accessibility_score :: float() | nil
 
+  @short_walk_threshold_minutes 5
+
   @derive {Nestru.Decoder, hint: %{end: DateTime, legs: [Leg], start: DateTime}}
   schema do
     field(:accessibility_score, accessibility_score())
@@ -70,4 +72,26 @@ defmodule OpenTripPlannerClient.Schema.Itinerary do
   end
 
   defp short_walking_leg?(_), do: false
+
+  @doc """
+  A series of `Leg.summary/1` for an itinerary, simplified further to 
+  omit very short intermediate walking legs.
+  """
+  @spec summary(__MODULE__.t()) :: [Leg.leg_summary()]
+  def summary(%__MODULE__{legs: legs}) do
+    legs
+    |> Enum.map(&Leg.summary/1)
+    |> Enum.with_index()
+    |> Enum.reject(fn
+      {_, index} when index == 0 or index == length(legs) - 1 ->
+        false
+
+      {%{routes: [], walk_minutes: minutes}, _} ->
+        minutes < @short_walk_threshold_minutes
+
+      _ ->
+        false
+    end)
+    |> Enum.map(fn {summary, _} -> summary end)
+  end
 end

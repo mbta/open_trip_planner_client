@@ -9,7 +9,7 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
 
     import Faker.Random.Elixir, only: [random_uniform: 0]
 
-    alias OpenTripPlannerClient.{Plan, PlanParams}
+    alias OpenTripPlannerClient.{ItineraryGroup, Plan, PlanParams}
 
     alias OpenTripPlannerClient.Schema.{
       Agency,
@@ -437,11 +437,12 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
     end
 
     def itinerary_group_factory(attrs) do
-      itineraries = attrs[:itineraries] || build_list(5, :itinerary)
+      itineraries = attrs[:itineraries] || groupable_otp_itineraries(1, 5)
       index = attrs[:representative_index] || Faker.random_between(0, Enum.count(itineraries) - 1)
 
       %OpenTripPlannerClient.ItineraryGroup{
         itineraries: itineraries,
+        summary: ItineraryGroup.summary(itineraries),
         representative_index: index,
         time_key: attrs[:time_key] || Faker.Util.pick([:start, :end])
       }

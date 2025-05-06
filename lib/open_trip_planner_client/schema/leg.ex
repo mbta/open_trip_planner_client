@@ -31,6 +31,11 @@ defmodule OpenTripPlannerClient.Schema.Leg do
   ]
 
   @typedoc """
+  A concise description of one or more `OpenTripPlannerClient.Schema.Leg`.
+  """
+  @type leg_summary :: %{walk_minutes: non_neg_integer(), routes: [Route.t()]}
+
+  @typedoc """
   State of real-time data, if present.
 
   SCHEDULED The trip information comes from the GTFS feed, i.e. no real-time
@@ -166,4 +171,23 @@ defmodule OpenTripPlannerClient.Schema.Leg do
 
   defp mbta_id(%{gtfs_id: "mbta-ma-us:" <> id}), do: id
   defp mbta_id(_), do: nil
+
+  @doc """
+  A concise desciption of a leg. Transit legs are described in terms of 
+  routes, and walking legs in terms of duration in minutes.
+  """
+  @spec summary(__MODULE__.t()) :: leg_summary()
+  def summary(%__MODULE__{duration: duration, transit_leg: false}) do
+    minutes =
+      duration
+      |> Timex.Duration.to_minutes(:seconds)
+      |> Kernel.round()
+      |> Kernel.max(1)
+
+    %{walk_minutes: minutes, routes: []}
+  end
+
+  def summary(%__MODULE__{route: route}) do
+    %{walk_minutes: 0, routes: [route]}
+  end
 end
