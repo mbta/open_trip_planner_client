@@ -22,6 +22,7 @@ defmodule OpenTripPlannerClient.Schema.Itinerary do
   @derive {Nestru.Decoder, hint: %{end: DateTime, legs: [Leg], start: DateTime}}
   schema do
     field(:accessibility_score, accessibility_score())
+    field(:generalized_cost, non_neg_integer())
     field(:duration, duration_seconds())
     field(:end, offset_datetime())
     field(:legs, [Leg.t()], @nonnull_field)
