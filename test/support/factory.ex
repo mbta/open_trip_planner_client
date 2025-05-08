@@ -80,6 +80,7 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
           |> Enum.map(& &1.duration)
           |> Enum.sum(),
         end: last_end,
+        generalized_cost: Faker.random_between(100, 1000),
         legs: legs,
         number_of_transfers: length(legs) - 1,
         start: first_start,
