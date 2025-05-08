@@ -42,7 +42,7 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
     itineraries
     |> Enum.group_by(&Itinerary.group_identifier/1)
     |> Enum.map(&to_group(&1, opts))
-    |> Enum.sort_by(&tag_priority/1)
+    |> Enum.sort_by(&tag_and_cost_sorter/1)
     |> Enum.take(Keyword.get(opts, :num_groups, @num_groups))
   end
 
@@ -121,17 +121,11 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
     |> then(&%{routes: [], walk_minutes: &1})
   end
 
-  @spec tag_priority(__MODULE__.t()) :: non_neg_integer() | nil
-  defp tag_priority(itinerary_group) do
-    itinerary_group
-    |> representative_itinerary()
-    |> Map.get(:tag)
-    |> then(fn representative_tag ->
-      Enum.find_index(
-        ItineraryTag.tag_priority_order(),
-        &(&1 == representative_tag)
-      )
-    end)
+  # Sorting first by tag priority, then by increasing generalized cost
+  @spec tag_and_cost_sorter(__MODULE__.t()) :: tuple()
+  defp tag_and_cost_sorter(itinerary_group) do
+    itinerary = representative_itinerary(itinerary_group)
+    {ItineraryTag.tag_order(itinerary[:tag]), itinerary[:generalized_cost]}
   end
 
   @spec representative_itinerary(__MODULE__.t()) :: Itinerary.t()

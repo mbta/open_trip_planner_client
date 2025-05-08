@@ -3,7 +3,7 @@ defmodule OpenTripPlannerClient.ItineraryGroupTest do
 
   import OpenTripPlannerClient.Test.Support.Factory
 
-  alias OpenTripPlannerClient.ItineraryGroup
+  alias OpenTripPlannerClient.{ItineraryGroup, ItineraryTag}
   alias OpenTripPlannerClient.Schema.{Itinerary, Route}
 
   describe "groups_from_itineraries/2" do
@@ -125,6 +125,37 @@ defmodule OpenTripPlannerClient.ItineraryGroupTest do
                %{walk_minutes: 0, routes: [%Route{}]},
                %{walk_minutes: _, routes: []}
              ] = summary
+    end
+
+    test "sort groups by tag and cost" do
+      many_groupable_itineraries =
+        groupable_otp_itineraries(20, 1)
+        |> Enum.map_every(
+          3,
+          &Map.put(&1, :tag, Faker.Util.pick(ItineraryTag.tag_priority_order()))
+        )
+
+      num_groups = Faker.random_between(2, 20)
+
+      groups =
+        many_groupable_itineraries
+        |> ItineraryGroup.groups_from_itineraries(num_groups: num_groups)
+
+      # verify the sorting by comparing each group to the next
+      # should start with tagged itineraries and end with untagged itineraries
+      # within each tag, sort from lower to higher generalized cost
+      groups
+      |> Enum.map(&ItineraryGroup.representative_itinerary/1)
+      |> Enum.scan(fn next, current ->
+        if next[:tag] == current[:tag] do
+          assert next[:generalized_cost] >= current[:generalized_cost]
+        else
+          assert ItineraryTag.tag_order(next[:tag]) > ItineraryTag.tag_order(current[:tag])
+        end
+
+        # just keep iterating
+        next
+      end)
     end
   end
 
