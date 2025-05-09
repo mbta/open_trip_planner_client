@@ -103,6 +103,100 @@ defmodule OpenTripPlannerClient.ItineraryGroupTest do
       assert summarized_walk_minutes > 0
     end
 
+    test "generated summary does not include short intermediate walking legs" do
+      [a, b, c, d] = build_list(4, :place_with_stop)
+
+      similar_routes =
+        build_list(20, :route, agency: build(:agency, name: "MBTA"), desc: nil, type: 2)
+
+      itineraries =
+        build_list(20, :itinerary,
+          accessibility_score: nil,
+          legs: fn ->
+            [
+              build(:transit_leg, route: Faker.Util.pick(similar_routes), from: a, to: b),
+              build(:walking_leg,
+                distance: 400,
+                duration: 60 * Faker.random_between(1, 4),
+                from: b,
+                to: c
+              ),
+              build(:transit_leg, route: Faker.Util.pick(similar_routes), from: c, to: d)
+            ]
+          end
+        )
+
+      [%ItineraryGroup{summary: summary}] = ItineraryGroup.groups_from_itineraries(itineraries)
+
+      assert [
+               %{walk_minutes: 0},
+               %{walk_minutes: 0}
+             ] = summary
+    end
+
+    test "generated summary does include intermediate walking legs over five minutes" do
+      walk_minutes = Faker.random_between(6, 20)
+
+      [a, b, c, d] = build_list(4, :place_with_stop)
+
+      similar_routes =
+        build_list(20, :route, agency: build(:agency, name: "MBTA"), desc: nil, type: 2)
+
+      itineraries =
+        build_list(20, :itinerary,
+          accessibility_score: nil,
+          legs: fn ->
+            [
+              build(:transit_leg, route: Faker.Util.pick(similar_routes), from: a, to: b),
+              build(:walking_leg, distance: 400, duration: 60 * walk_minutes, from: b, to: c),
+              build(:transit_leg, route: Faker.Util.pick(similar_routes), from: c, to: d)
+            ]
+          end
+        )
+
+      [%ItineraryGroup{summary: summary}] = ItineraryGroup.groups_from_itineraries(itineraries)
+
+      assert [
+               %{walk_minutes: 0},
+               %{walk_minutes: ^walk_minutes},
+               %{walk_minutes: 0}
+             ] = summary
+    end
+
+    test "generated summary includes short intermediate walking legs at the beginning and end" do
+      walk_minutes_start = Faker.random_between(1, 20)
+      walk_minutes_end = Faker.random_between(1, 20)
+      [a, b, c, d] = build_list(4, :place_with_stop)
+
+      similar_routes =
+        build_list(20, :route, agency: build(:agency, name: "MBTA"), desc: nil, type: 2)
+
+      itineraries =
+        build_list(20, :itinerary,
+          accessibility_score: nil,
+          legs: fn ->
+            [
+              build(:walking_leg,
+                distance: 400,
+                duration: 60 * walk_minutes_start,
+                from: a,
+                to: b
+              ),
+              build(:transit_leg, route: Faker.Util.pick(similar_routes), from: b, to: c),
+              build(:walking_leg, distance: 400, duration: 60 * walk_minutes_end, from: c, to: d)
+            ]
+          end
+        )
+
+      [%ItineraryGroup{summary: summary}] = ItineraryGroup.groups_from_itineraries(itineraries)
+
+      assert [
+               %{walk_minutes: ^walk_minutes_start},
+               %{walk_minutes: 0},
+               %{walk_minutes: ^walk_minutes_end}
+             ] = summary
+    end
+
     test "generates a summary for one input itinerary" do
       [a, b] = build_list(2, :place_with_stop)
       c = build(:place)
