@@ -12,7 +12,7 @@ defmodule OpenTripPlannerClient do
   """
   @behaviour OpenTripPlannerClient.Behaviour
 
-  alias OpenTripPlannerClient.{ItineraryTag, Parser, PlanParams, Util}
+  alias OpenTripPlannerClient.{ItineraryGroup, ItineraryTag, Parser, Plan, PlanParams, Util}
 
   require Logger
 
@@ -26,13 +26,11 @@ defmodule OpenTripPlannerClient do
     tags = if tags, do: tags, else: default_tags(params)
 
     case send_request(params) do
-      {:ok, plan} ->
-        plan
-        |> update_in([:itineraries], fn itineraries ->
-          itineraries
-          |> Enum.map(&Map.put_new(&1, :tag, nil))
-          |> ItineraryTag.apply_tags(tags)
-        end)
+      {:ok, %Plan{itineraries: itineraries}} ->
+        itineraries
+        |> Enum.map(&Map.put_new(&1, :tag, nil))
+        |> ItineraryTag.apply_tags(tags)
+        |> ItineraryGroup.groups_from_itineraries(take_from_end: params.arriveBy)
         |> then(&{:ok, &1})
 
       error ->

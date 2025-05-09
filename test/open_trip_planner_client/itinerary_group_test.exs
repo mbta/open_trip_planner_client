@@ -3,8 +3,8 @@ defmodule OpenTripPlannerClient.ItineraryGroupTest do
 
   import OpenTripPlannerClient.Test.Support.Factory
 
-  alias OpenTripPlannerClient.ItineraryGroup
-  alias OpenTripPlannerClient.Schema.Itinerary
+  alias OpenTripPlannerClient.{ItineraryGroup, ItineraryTag}
+  alias OpenTripPlannerClient.Schema.{Itinerary, Route}
 
   describe "groups_from_itineraries/2" do
     test "can group itineraries separately" do
@@ -54,7 +54,7 @@ defmodule OpenTripPlannerClient.ItineraryGroupTest do
       [%ItineraryGroup{} = group2] =
         ItineraryGroup.groups_from_itineraries(groupable_itineraries, take_from_end: false)
 
-      assert group1.representative_index == -1
+      assert group1.representative_index == length(group1.itineraries) - 1
       assert group2.representative_index == 0
     end
 
@@ -70,51 +70,186 @@ defmodule OpenTripPlannerClient.ItineraryGroupTest do
       assert group1.time_key == :end
       assert group2.time_key == :start
     end
-  end
 
-  describe "leg_summaries/1" do
-    setup do
-      groupable_itineraries = groupable_otp_itineraries(1, 3)
-      group = ItineraryGroup.groups_from_itineraries(groupable_itineraries) |> List.first()
-      {:ok, %{group: group}}
-    end
+    test "generates a summary based on all input itineraries" do
+      [a, b] = build_list(2, :place_with_stop)
+      c = build(:place)
 
-    test "returns list of either walking minutes or transit routes", %{group: group} do
-      assert leg_summaries = ItineraryGroup.leg_summaries(group)
+      similar_routes =
+        build_list(20, :route, agency: build(:agency, name: "MBTA"), desc: nil, type: 2)
 
-      for %{walk_minutes: walk_minutes, routes: grouped_routes} <- leg_summaries do
-        assert walk_minutes > 0 or length(grouped_routes) > 0
-      end
-    end
-
-    test "groups overlapping routes together" do
-      route = build(:route, type: 2)
-      related_route = build(:route, type: 2)
-      from = build(:place_with_stop)
-      to = build(:place_with_stop)
-
-      itinerary =
-        build(:itinerary, legs: build_list(1, :transit_leg, route: route, from: from, to: to))
-
-      related_itinerary =
-        build(:itinerary,
-          legs: build_list(1, :transit_leg, route: related_route, from: from, to: to)
+      itineraries =
+        build_list(20, :itinerary,
+          accessibility_score: nil,
+          legs: fn ->
+            [
+              build(:transit_leg, route: Faker.Util.pick(similar_routes), from: a, to: b),
+              build(:walking_leg, distance: 400, from: b, to: c)
+            ]
+          end
         )
 
-      [group] = [itinerary, related_itinerary] |> ItineraryGroup.groups_from_itineraries()
-      assert [%{routes: grouped_routes}] = ItineraryGroup.leg_summaries(group)
-      assert Enum.sort(grouped_routes) == Enum.sort([route, related_route])
+      [%ItineraryGroup{summary: summary, itineraries: truncated_itineraries}] =
+        ItineraryGroup.groups_from_itineraries(itineraries)
+
+      assert length(truncated_itineraries) < length(itineraries)
+
+      assert [
+               %{walk_minutes: 0, routes: summarized_routes},
+               %{walk_minutes: summarized_walk_minutes, routes: []}
+             ] = summary
+
+      assert length(summarized_routes) > length(truncated_itineraries)
+      assert summarized_walk_minutes > 0
     end
 
-    test "omits short intermediate walks" do
-      short_leg = build(:walking_leg, duration: 60)
-      long_leg = build(:walking_leg, duration: 600)
+    test "generated summary does not include short intermediate walking legs" do
+      [a, b, c, d] = build_list(4, :place_with_stop)
 
-      [group] =
-        build_list(2, :itinerary, legs: [long_leg, short_leg, long_leg])
-        |> ItineraryGroup.groups_from_itineraries()
+      similar_routes =
+        build_list(20, :route, agency: build(:agency, name: "MBTA"), desc: nil, type: 2)
 
-      assert [%{walk_minutes: 10.0}, %{walk_minutes: 10.0}] = ItineraryGroup.leg_summaries(group)
+      itineraries =
+        build_list(20, :itinerary,
+          accessibility_score: nil,
+          legs: fn ->
+            [
+              build(:transit_leg, route: Faker.Util.pick(similar_routes), from: a, to: b),
+              build(:walking_leg,
+                distance: 400,
+                duration: 60 * Faker.random_between(1, 4),
+                from: b,
+                to: c
+              ),
+              build(:transit_leg, route: Faker.Util.pick(similar_routes), from: c, to: d)
+            ]
+          end
+        )
+
+      [%ItineraryGroup{summary: summary}] = ItineraryGroup.groups_from_itineraries(itineraries)
+
+      assert [
+               %{walk_minutes: 0},
+               %{walk_minutes: 0}
+             ] = summary
+    end
+
+    test "generated summary does include intermediate walking legs over five minutes" do
+      walk_minutes = Faker.random_between(6, 20)
+
+      [a, b, c, d] = build_list(4, :place_with_stop)
+
+      similar_routes =
+        build_list(20, :route, agency: build(:agency, name: "MBTA"), desc: nil, type: 2)
+
+      itineraries =
+        build_list(20, :itinerary,
+          accessibility_score: nil,
+          legs: fn ->
+            [
+              build(:transit_leg, route: Faker.Util.pick(similar_routes), from: a, to: b),
+              build(:walking_leg, distance: 400, duration: 60 * walk_minutes, from: b, to: c),
+              build(:transit_leg, route: Faker.Util.pick(similar_routes), from: c, to: d)
+            ]
+          end
+        )
+
+      [%ItineraryGroup{summary: summary}] = ItineraryGroup.groups_from_itineraries(itineraries)
+
+      assert [
+               %{walk_minutes: 0},
+               %{walk_minutes: ^walk_minutes},
+               %{walk_minutes: 0}
+             ] = summary
+    end
+
+    test "generated summary includes short intermediate walking legs at the beginning and end" do
+      walk_minutes_start = Faker.random_between(1, 20)
+      walk_minutes_end = Faker.random_between(1, 20)
+      [a, b, c, d] = build_list(4, :place_with_stop)
+
+      similar_routes =
+        build_list(20, :route, agency: build(:agency, name: "MBTA"), desc: nil, type: 2)
+
+      itineraries =
+        build_list(20, :itinerary,
+          accessibility_score: nil,
+          legs: fn ->
+            [
+              build(:walking_leg,
+                distance: 400,
+                duration: 60 * walk_minutes_start,
+                from: a,
+                to: b
+              ),
+              build(:transit_leg, route: Faker.Util.pick(similar_routes), from: b, to: c),
+              build(:walking_leg, distance: 400, duration: 60 * walk_minutes_end, from: c, to: d)
+            ]
+          end
+        )
+
+      [%ItineraryGroup{summary: summary}] = ItineraryGroup.groups_from_itineraries(itineraries)
+
+      assert [
+               %{walk_minutes: ^walk_minutes_start},
+               %{walk_minutes: 0},
+               %{walk_minutes: ^walk_minutes_end}
+             ] = summary
+    end
+
+    test "generates a summary for one input itinerary" do
+      [a, b] = build_list(2, :place_with_stop)
+      c = build(:place)
+
+      itineraries =
+        build_list(1, :itinerary,
+          accessibility_score: nil,
+          legs: fn ->
+            [
+              build(:transit_leg, from: a, to: b),
+              build(:walking_leg, distance: 400, from: b, to: c)
+            ]
+          end
+        )
+
+      [%ItineraryGroup{summary: summary}] =
+        ItineraryGroup.groups_from_itineraries(itineraries)
+
+      assert [
+               %{walk_minutes: 0, routes: [%Route{}]},
+               %{walk_minutes: _, routes: []}
+             ] = summary
+    end
+
+    test "sort groups by tag and cost" do
+      many_groupable_itineraries =
+        groupable_otp_itineraries(20, 1)
+        |> Enum.map_every(
+          3,
+          &Map.put(&1, :tag, Faker.Util.pick(ItineraryTag.tag_priority_order()))
+        )
+
+      num_groups = Faker.random_between(2, 20)
+
+      groups =
+        many_groupable_itineraries
+        |> ItineraryGroup.groups_from_itineraries(num_groups: num_groups)
+
+      # verify the sorting by comparing each group to the next
+      # should start with tagged itineraries and end with untagged itineraries
+      # within each tag, sort from lower to higher generalized cost
+      groups
+      |> Enum.map(&ItineraryGroup.representative_itinerary/1)
+      |> Enum.scan(fn next, current ->
+        if next[:tag] == current[:tag] do
+          assert next[:generalized_cost] >= current[:generalized_cost]
+        else
+          assert ItineraryTag.tag_order(next[:tag]) > ItineraryTag.tag_order(current[:tag])
+        end
+
+        # just keep iterating
+        next
+      end)
     end
   end
 
