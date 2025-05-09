@@ -156,7 +156,7 @@ defmodule OpenTripPlannerClient.Schema.Leg do
 
   def group_identifier(%__MODULE__{route: %Route{type: 3} = route} = leg) do
     route_id = mbta_id(route)
-    silver_line_rapid_transit_ids = ~w(741 742 743)
+    silver_line_rapid_transit_ids = ~w(741 742 743 746)
 
     if route_id in silver_line_rapid_transit_ids do
       {:silver_line, leg.from.name, leg.to.name}
