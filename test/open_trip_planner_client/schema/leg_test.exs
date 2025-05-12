@@ -89,12 +89,12 @@ defmodule LegTest do
       assert Leg.group_identifier(bus_leg) != Leg.group_identifier(sl_leg)
     end
 
-    test "Silver Line 1/2/3 grouped with each other" do
+    test "Silver Line 1/2/3/Waterfront grouped with each other" do
       from = build(:place_with_stop)
       to = build(:place_with_stop)
 
       [route1, route2] =
-        Faker.Util.sample_uniq(2, fn -> Faker.Util.pick(~w(741 742 743)) end)
+        Faker.Util.sample_uniq(2, fn -> Faker.Util.pick(~w(741 742 743 746)) end)
         |> Enum.map(&build(:route, gtfs_id: "mbta-ma-us:#{&1}", type: 3))
 
       leg1 = build(:transit_leg, from: from, to: to, route: route1)

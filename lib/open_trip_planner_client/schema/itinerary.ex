@@ -85,15 +85,15 @@ defmodule OpenTripPlannerClient.Schema.Itinerary do
     |> drop_short_intermediate_walking_legs()
   end
 
-  # Drops intermediate entries in `legs` that have walking times of # under
-  # five minutes. Intermediate in this context means that it # will keep the
-  # first and last entries, even if those are short # walking legs, but will
+  # Drops intermediate entries in `legs` that have walking times of under
+  # five minutes. Intermediate in this context means that it will keep the
+  # first and last entries, even if those are short walking legs, but will
   # drop ones in the middle.
   defp drop_short_intermediate_walking_legs([first_leg | rest_of_legs]) do
     [first_leg | drop_short_walking_legs(rest_of_legs)]
   end
 
-  # Drops short walking legs from the given list, except for the last # item,
+  # Drops short walking legs from the given list, except for the last item,
   # which it keeps regardless.
   defp drop_short_walking_legs([leg]), do: [leg]
   defp drop_short_walking_legs([]), do: []
