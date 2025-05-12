@@ -135,12 +135,15 @@ defmodule OpenTripPlannerClient.ItineraryTag do
       |> DateTime.to_unix()
     end
 
-    priority_sorter = fn itinerary ->
-      @tag_priority_order
-      |> Enum.find_index(&(&1 === itinerary[:tag]))
-    end
+    priority_sorter = fn itinerary -> tag_order(itinerary[:tag]) end
 
     tagged_itineraries
     |> Enum.sort_by(&{priority_sorter.(&1), chrono_sorter.(&1)})
+  end
+
+  @spec tag_order(atom() | nil) :: non_neg_integer() | nil
+  def tag_order(tag) do
+    @tag_priority_order
+    |> Enum.find_index(&(&1 === tag))
   end
 end

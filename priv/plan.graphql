@@ -42,6 +42,7 @@ query TripPlan(
       accessibilityScore
       duration
       end
+      generalizedCost
       legs {
         agency { name }
         distance

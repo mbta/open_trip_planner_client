@@ -7,23 +7,24 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
   """
 
   alias OpenTripPlannerClient.ItineraryTag
-  alias OpenTripPlannerClient.Schema.{Itinerary, Leg, Route}
+  alias OpenTripPlannerClient.Schema.{Itinerary, Leg}
 
   @type t :: %__MODULE__{
           itineraries: [Itinerary.t()],
+          summary: [Leg.leg_summary()],
           representative_index: non_neg_integer(),
           time_key: :start | :end
         }
 
   defstruct [
     :itineraries,
+    :summary,
     :representative_index,
     :time_key
   ]
 
   @max_per_group 4
   @num_groups 5
-  @short_walk_threshold_minutes 5
 
   @doc """
   From a large list of itineraries, collect them into #{@num_groups} groups of at most
@@ -40,95 +41,91 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
   def groups_from_itineraries(itineraries, opts \\ []) do
     itineraries
     |> Enum.group_by(&Itinerary.group_identifier/1)
-    |> Enum.map(&truncate_list(&1, opts))
-    |> Enum.reject(&Enum.empty?/1)
     |> Enum.map(&to_group(&1, opts))
-    |> Enum.sort_by(&tag_priority/1)
+    |> Enum.sort_by(&tag_and_cost_sorter/1)
     |> Enum.take(Keyword.get(opts, :num_groups, @num_groups))
   end
 
-  defp truncate_list({_, grouped_itineraries}, opts) do
+  defp truncate_list(grouped_itineraries, opts) do
     if opts[:take_from_end] do
       grouped_itineraries
-      |> ItineraryTag.sort_tagged(:end)
+      |> Enum.sort_by(&DateTime.to_unix(&1.end))
       |> Enum.take(-@max_per_group)
     else
       grouped_itineraries
-      |> ItineraryTag.sort_tagged(:start)
+      |> Enum.sort_by(&DateTime.to_unix(&1.start))
       |> Enum.take(@max_per_group)
     end
   end
 
-  defp to_group(grouped_itineraries, opts) do
-    representative_index = if(opts[:take_from_end], do: -1, else: 0)
+  defp to_group({_, all_itineraries}, opts) do
+    limited_itineraries = truncate_list(all_itineraries, opts)
+    summary = summary(all_itineraries)
+    representative_index = if(opts[:take_from_end], do: length(limited_itineraries) - 1, else: 0)
     time_key = if(opts[:take_from_end], do: :end, else: :start)
 
     %__MODULE__{
-      itineraries: grouped_itineraries,
+      itineraries: limited_itineraries,
+      summary: summary,
       representative_index: representative_index,
       time_key: time_key
     }
   end
 
-  @spec leg_summaries(__MODULE__.t()) :: [%{walk_minutes: non_neg_integer(), routes: [Route.t()]}]
-  def leg_summaries(%__MODULE__{itineraries: itineraries}) do
+  @doc """
+  An aggregation of `Itinerary.summary/1` for an itinerary group. Because itineraries
+  in a given group contain similar sequences of legs (as computed by
+  `Leg.group_identifier/1`), we can summarize across many itineraries by aggregating
+  one leg at a time.
+
+  Corresponding walking legs in a given group have the same from/to location and are
+  assumed to have the same duration, so we can just pick one, additionally rounding to
+  the nearest integer.
+
+  `[%{walk_minutes: 3.75}, %{walk_minutes: 3.75}, %{walk_minutes: 3.75}]` --> `%{walk_minutes: 4}`
+
+  Corresponding transit legs may use different routes, so these are collected together:
+
+  `[%{routes: [A]}, %{routes: [B]}, %{routes: [C]}]` --> `%{routes: [A, B, C]}`
+  """
+  @spec summary([Itinerary.t()]) :: [Leg.leg_summary()]
+  def summary(itineraries) do
     itineraries
-    |> Enum.map(& &1.legs)
-    |> Enum.zip_with(&Function.identity/1)
-    |> Enum.map(&aggregate_legs/1)
-    |> remove_short_intermediate_walks()
+    |> Enum.map(&Itinerary.summary/1)
+    |> aggregate_summaries()
   end
 
-  defp aggregate_legs(legs) do
-    legs
-    |> Enum.uniq_by(&combined_leg_to_tuple/1)
-    |> Enum.reduce(%{walk_minutes: 0, routes: []}, &summarize_legs/2)
-  end
-
-  defp combined_leg_to_tuple(%Leg{transit_leg: false} = leg) do
-    Leg.group_identifier(leg)
-  end
-
-  defp combined_leg_to_tuple(%Leg{route: route} = leg) do
-    {route.gtfs_id, leg.from.name, leg.to.name}
-  end
-
-  defp summarize_legs(%Leg{duration: duration, transit_leg: false}, summary) do
-    minutes = Timex.Duration.to_minutes(duration, :seconds)
-
-    summary
-    |> Map.update!(:walk_minutes, &(&1 + minutes))
-  end
-
-  defp summarize_legs(%Leg{route: route}, summary) do
-    summary
-    |> Map.update!(:routes, fn routes ->
-      [route | routes]
-      |> Enum.sort_by(& &1.sort_order)
+  defp aggregate_summaries(itinerary_summaries) do
+    itinerary_summaries
+    |> Enum.zip()
+    |> Enum.map(fn leg_summaries ->
+      leg_summaries
+      |> Tuple.to_list()
+      |> aggregate_leg_summaries()
     end)
   end
 
-  defp remove_short_intermediate_walks(summarized_legs) do
-    summarized_legs
-    |> Enum.with_index()
-    |> Enum.reject(fn {leg, index} ->
-      index > 0 && index < length(summarized_legs) - 1 &&
-        (leg.routes == [] && leg.walk_minutes < @short_walk_threshold_minutes)
-    end)
-    |> Enum.map(fn {leg, _} -> leg end)
+  defp aggregate_leg_summaries([%{routes: routes} | _] = summaries) when routes != [] do
+    summaries
+    |> Enum.flat_map(& &1.routes)
+    |> Enum.uniq()
+    |> Enum.sort_by(& &1.sort_order)
+    |> then(&%{routes: &1, walk_minutes: 0})
   end
 
-  @spec tag_priority(__MODULE__.t()) :: non_neg_integer() | nil
-  defp tag_priority(itinerary_group) do
-    itinerary_group
-    |> representative_itinerary()
-    |> Map.get(:tag)
-    |> then(fn representative_tag ->
-      Enum.find_index(
-        ItineraryTag.tag_priority_order(),
-        &(&1 == representative_tag)
-      )
-    end)
+  defp aggregate_leg_summaries(walks) do
+    walks
+    |> Enum.map(& &1.walk_minutes)
+    |> Enum.filter(&(&1 > 0))
+    |> List.first(0)
+    |> then(&%{routes: [], walk_minutes: &1})
+  end
+
+  # Sorting first by tag priority, then by increasing generalized cost
+  @spec tag_and_cost_sorter(__MODULE__.t()) :: tuple()
+  defp tag_and_cost_sorter(itinerary_group) do
+    itinerary = representative_itinerary(itinerary_group)
+    {ItineraryTag.tag_order(itinerary[:tag]), itinerary[:generalized_cost]}
   end
 
   @spec representative_itinerary(__MODULE__.t()) :: Itinerary.t()

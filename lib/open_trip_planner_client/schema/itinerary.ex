@@ -17,9 +17,12 @@ defmodule OpenTripPlannerClient.Schema.Itinerary do
   """
   @type accessibility_score :: float() | nil
 
+  @short_walk_threshold_minutes 5
+
   @derive {Nestru.Decoder, hint: %{end: DateTime, legs: [Leg], start: DateTime}}
   schema do
     field(:accessibility_score, accessibility_score())
+    field(:generalized_cost, non_neg_integer())
     field(:duration, duration_seconds())
     field(:end, offset_datetime())
     field(:legs, [Leg.t()], @nonnull_field)
@@ -70,4 +73,35 @@ defmodule OpenTripPlannerClient.Schema.Itinerary do
   end
 
   defp short_walking_leg?(_), do: false
+
+  @doc """
+  A series of `Leg.summary/1` for an itinerary, simplified further to 
+  omit very short intermediate walking legs.
+  """
+  @spec summary(__MODULE__.t()) :: [Leg.leg_summary()]
+  def summary(%__MODULE__{legs: legs}) do
+    legs
+    |> Enum.map(&Leg.summary/1)
+    |> drop_short_intermediate_walking_legs()
+  end
+
+  # Drops intermediate entries in `legs` that have walking times of under
+  # five minutes. Intermediate in this context means that it will keep the
+  # first and last entries, even if those are short walking legs, but will
+  # drop ones in the middle.
+  defp drop_short_intermediate_walking_legs([first_leg | rest_of_legs]) do
+    [first_leg | drop_short_walking_legs(rest_of_legs)]
+  end
+
+  # Drops short walking legs from the given list, except for the last item,
+  # which it keeps regardless.
+  defp drop_short_walking_legs([leg]), do: [leg]
+  defp drop_short_walking_legs([]), do: []
+
+  defp drop_short_walking_legs([%{routes: [], walk_minutes: minutes} | rest_of_legs])
+       when minutes < @short_walk_threshold_minutes,
+       do: drop_short_walking_legs(rest_of_legs)
+
+  defp drop_short_walking_legs([first_leg | rest_of_legs]),
+    do: [first_leg | drop_short_walking_legs(rest_of_legs)]
 end
