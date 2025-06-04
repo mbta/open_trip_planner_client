@@ -98,9 +98,7 @@ defmodule OpenTripPlannerClient.PlanParams do
   @typedoc """
   Specifying an origin or destination for trip planning.
   """
-  @type place_map ::
-          %{name: String.t(), stop_id: String.t()}
-          | %{name: String.t(), latitude: float(), longitude: float()}
+  @type place_map :: %{latitude: float(), longitude: float()}
 
   @typedoc """
   Customization options for trip planning.
@@ -165,13 +163,9 @@ defmodule OpenTripPlannerClient.PlanParams do
   end
 
   @spec to_place_param(place_map()) :: place()
-  defp to_place_param(%{name: name, stop_id: stop_id}) when is_binary(stop_id) do
-    "#{name}::mbta-ma-us:#{stop_id}"
-  end
-
-  defp to_place_param(%{name: name, latitude: latitude, longitude: longitude})
+  defp to_place_param(%{latitude: latitude, longitude: longitude} = place)
        when is_float(latitude) and is_float(longitude) do
-    "#{name}::#{latitude},#{longitude}"
+    "#{Map.get(place, :name, "")}::#{latitude},#{longitude}"
   end
 
   @spec to_modes_param([mode_t()]) :: transport_modes()
