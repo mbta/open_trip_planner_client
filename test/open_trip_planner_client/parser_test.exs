@@ -149,4 +149,174 @@ defmodule OpenTripPlannerClient.ParserTest do
                end)
     end
   end
+
+  describe "validate_itineraries/1" do
+    setup do
+      %{itinerary: build(:itinerary)}
+    end
+
+    test "drops first walking leg to station only if having same name and short distance", %{
+      itinerary: itinerary
+    } do
+      leg_to_remove = base_little_leg_to_remove() |> with_stop(:to)
+      parsed_itinerary = get_validated_itinerary(itinerary, [leg_to_remove | itinerary.legs])
+      refute leg_to_remove in parsed_itinerary.legs
+    end
+
+    test "keeps first walking leg if sufficiently distant", %{itinerary: itinerary} do
+      leg_to_remove = base_little_leg_to_remove() |> with_stop(:to)
+
+      leg_with_larger_distance =
+        update_in(leg_to_remove, [:distance], fn _ -> Faker.random_between(322, 10_000_000) end)
+
+      parsed_itinerary =
+        get_validated_itinerary(itinerary, [leg_with_larger_distance | itinerary.legs])
+
+      assert leg_with_larger_distance in parsed_itinerary.legs
+    end
+
+    test "keeps first walking leg if from a different location", %{itinerary: itinerary} do
+      leg_to_remove = base_little_leg_to_remove() |> with_stop(:to)
+
+      leg_with_other_location =
+        update_in(leg_to_remove, [:to, :name], fn _ -> Faker.App.name() end)
+
+      parsed_itinerary =
+        get_validated_itinerary(itinerary, [leg_with_other_location | itinerary.legs])
+
+      assert leg_with_other_location in parsed_itinerary.legs
+    end
+
+    test "keeps short first walking legs if not from place to station", %{
+      itinerary: itinerary
+    } do
+      first_leg_no_station = base_little_leg_to_remove()
+      first_leg_from_station = first_leg_no_station |> with_stop(:from)
+
+      for leg <- [first_leg_no_station, first_leg_from_station] do
+        parsed_itinerary = get_validated_itinerary(itinerary, [leg | itinerary.legs])
+        assert leg in parsed_itinerary.legs
+      end
+    end
+
+    test "keeps walking legs having same name and short distance if not at start", %{
+      itinerary: itinerary
+    } do
+      leg_to_remove = base_little_leg_to_remove() |> with_stop(:to)
+      # put somewhere in middle
+      legs =
+        (itinerary.legs ++ itinerary.legs)
+        |> List.insert_at(length(itinerary.legs), leg_to_remove)
+
+      parsed_itinerary =
+        get_validated_itinerary(itinerary, legs)
+
+      assert leg_to_remove in parsed_itinerary.legs
+    end
+
+    test "keeps short last walking legs if not from station to place", %{itinerary: itinerary} do
+      last_leg_no_station = base_little_leg_to_remove()
+
+      parsed_itinerary =
+        get_validated_itinerary(
+          itinerary,
+          List.insert_at(itinerary.legs, -1, last_leg_no_station)
+        )
+
+      assert last_leg_no_station in parsed_itinerary.legs
+    end
+
+    test "drops last walking leg from station only if having same name and short distance", %{
+      itinerary: itinerary
+    } do
+      leg_to_remove = base_little_leg_to_remove() |> with_stop(:from)
+
+      parsed_itinerary =
+        get_validated_itinerary(itinerary, List.insert_at(itinerary.legs, -1, leg_to_remove))
+
+      refute leg_to_remove in parsed_itinerary.legs
+    end
+
+    test "keeps last walking leg if sufficiently distant", %{itinerary: itinerary} do
+      leg_to_remove = base_little_leg_to_remove() |> with_stop(:from)
+
+      leg_with_larger_distance =
+        update_in(leg_to_remove, [:distance], fn _ -> Faker.random_between(322, 10_000_000) end)
+
+      parsed_itinerary =
+        get_validated_itinerary(
+          itinerary,
+          List.insert_at(itinerary.legs, -1, leg_with_larger_distance)
+        )
+
+      assert leg_with_larger_distance in parsed_itinerary.legs
+    end
+
+    test "keeps last walking leg if to a different location", %{itinerary: itinerary} do
+      leg_to_remove = base_little_leg_to_remove() |> with_stop(:from)
+
+      leg_with_other_location =
+        update_in(leg_to_remove, [:to, :name], fn _ -> Faker.App.name() end)
+
+      parsed_itinerary =
+        get_validated_itinerary(
+          itinerary,
+          List.insert_at(itinerary.legs, -1, leg_with_other_location)
+        )
+
+      assert leg_with_other_location in parsed_itinerary.legs
+    end
+
+    test "can drop first and last walking legs", %{itinerary: itinerary} do
+      first_leg_to_remove = base_little_leg_to_remove() |> with_stop(:to)
+      last_leg_to_remove = base_little_leg_to_remove() |> with_stop(:from)
+
+      parsed_itinerary =
+        get_validated_itinerary(itinerary, [
+          first_leg_to_remove | List.insert_at(itinerary.legs, -1, last_leg_to_remove)
+        ])
+
+      refute first_leg_to_remove in parsed_itinerary.legs
+      refute last_leg_to_remove in parsed_itinerary.legs
+    end
+
+    test "if only leg, does not remove", %{itinerary: itinerary} do
+      leg_to_remove = base_little_leg_to_remove() |> with_stop(:to)
+      parsed_itinerary = get_validated_itinerary(itinerary, [leg_to_remove])
+      assert leg_to_remove in parsed_itinerary.legs
+    end
+
+    test "if no legs, does nothing", %{itinerary: itinerary} do
+      assert parsed_itinerary = get_validated_itinerary(itinerary, [])
+      assert parsed_itinerary.legs == []
+    end
+  end
+
+  defp get_validated_itinerary(itinerary, new_legs) do
+    itinerary
+    |> update_in([:legs], fn _ -> new_legs end)
+    |> List.wrap()
+    |> validate_itineraries()
+    |> List.first()
+  end
+
+  defp base_little_leg_to_remove do
+    name = Faker.Lorem.word()
+
+    build(
+      :leg,
+      %{
+        distance: Faker.random_between(1, 321),
+        mode: :WALK,
+        steps: build_list(3, :step),
+        transit_leg: false,
+        from: build(:place, name: name),
+        to: build(:place, name: name)
+      }
+    )
+  end
+
+  defp with_stop(leg, from_or_to) do
+    update_in(leg, [from_or_to, :stop], fn _ -> build(:stop) end)
+  end
 end
