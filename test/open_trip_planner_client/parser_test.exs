@@ -159,7 +159,7 @@ defmodule OpenTripPlannerClient.ParserTest do
       itinerary: itinerary
     } do
       leg_to_remove = base_little_leg_to_remove() |> with_stop(:to)
-      parsed_itinerary = get_validated_itinerary(itinerary, [leg_to_remove | itinerary.legs])
+      parsed_itinerary = get_simplified_itinerary(itinerary, [leg_to_remove | itinerary.legs])
       refute leg_to_remove in parsed_itinerary.legs
       assert Enum.all?(itinerary.legs, &Enum.member?(parsed_itinerary.legs, &1))
     end
@@ -171,7 +171,7 @@ defmodule OpenTripPlannerClient.ParserTest do
         update_in(leg_to_remove, [:distance], fn _ -> Faker.random_between(322, 10_000_000) end)
 
       parsed_itinerary =
-        get_validated_itinerary(itinerary, [leg_with_larger_distance | itinerary.legs])
+        get_simplified_itinerary(itinerary, [leg_with_larger_distance | itinerary.legs])
 
       assert leg_with_larger_distance in parsed_itinerary.legs
     end
@@ -183,7 +183,7 @@ defmodule OpenTripPlannerClient.ParserTest do
         update_in(leg_to_remove, [:to, :name], fn _ -> Faker.App.name() end)
 
       parsed_itinerary =
-        get_validated_itinerary(itinerary, [leg_with_other_location | itinerary.legs])
+        get_simplified_itinerary(itinerary, [leg_with_other_location | itinerary.legs])
 
       assert leg_with_other_location in parsed_itinerary.legs
     end
@@ -195,7 +195,7 @@ defmodule OpenTripPlannerClient.ParserTest do
       first_leg_from_station = first_leg_no_station |> with_stop(:from)
 
       for leg <- [first_leg_no_station, first_leg_from_station] do
-        parsed_itinerary = get_validated_itinerary(itinerary, [leg | itinerary.legs])
+        parsed_itinerary = get_simplified_itinerary(itinerary, [leg | itinerary.legs])
         assert leg in parsed_itinerary.legs
       end
     end
@@ -210,7 +210,7 @@ defmodule OpenTripPlannerClient.ParserTest do
         |> List.insert_at(length(itinerary.legs), leg_to_remove)
 
       parsed_itinerary =
-        get_validated_itinerary(itinerary, legs)
+        get_simplified_itinerary(itinerary, legs)
 
       assert leg_to_remove in parsed_itinerary.legs
     end
@@ -219,7 +219,7 @@ defmodule OpenTripPlannerClient.ParserTest do
       last_leg_no_station = base_little_leg_to_remove()
 
       parsed_itinerary =
-        get_validated_itinerary(
+        get_simplified_itinerary(
           itinerary,
           List.insert_at(itinerary.legs, -1, last_leg_no_station)
         )
@@ -233,7 +233,7 @@ defmodule OpenTripPlannerClient.ParserTest do
       leg_to_remove = base_little_leg_to_remove() |> with_stop(:from)
 
       parsed_itinerary =
-        get_validated_itinerary(itinerary, List.insert_at(itinerary.legs, -1, leg_to_remove))
+        get_simplified_itinerary(itinerary, List.insert_at(itinerary.legs, -1, leg_to_remove))
 
       refute leg_to_remove in parsed_itinerary.legs
       assert Enum.all?(itinerary.legs, &Enum.member?(parsed_itinerary.legs, &1))
@@ -246,7 +246,7 @@ defmodule OpenTripPlannerClient.ParserTest do
         update_in(leg_to_remove, [:distance], fn _ -> Faker.random_between(322, 10_000_000) end)
 
       parsed_itinerary =
-        get_validated_itinerary(
+        get_simplified_itinerary(
           itinerary,
           List.insert_at(itinerary.legs, -1, leg_with_larger_distance)
         )
@@ -261,7 +261,7 @@ defmodule OpenTripPlannerClient.ParserTest do
         update_in(leg_to_remove, [:to, :name], fn _ -> Faker.App.name() end)
 
       parsed_itinerary =
-        get_validated_itinerary(
+        get_simplified_itinerary(
           itinerary,
           List.insert_at(itinerary.legs, -1, leg_with_other_location)
         )
@@ -274,7 +274,7 @@ defmodule OpenTripPlannerClient.ParserTest do
       last_leg_to_remove = base_little_leg_to_remove() |> with_stop(:from)
 
       parsed_itinerary =
-        get_validated_itinerary(itinerary, [
+        get_simplified_itinerary(itinerary, [
           first_leg_to_remove | List.insert_at(itinerary.legs, -1, last_leg_to_remove)
         ])
 
@@ -284,17 +284,17 @@ defmodule OpenTripPlannerClient.ParserTest do
 
     test "if only leg, does not remove", %{itinerary: itinerary} do
       leg_to_remove = base_little_leg_to_remove() |> with_stop(:to)
-      parsed_itinerary = get_validated_itinerary(itinerary, [leg_to_remove])
+      parsed_itinerary = get_simplified_itinerary(itinerary, [leg_to_remove])
       assert leg_to_remove in parsed_itinerary.legs
     end
 
     test "if no legs, does nothing", %{itinerary: itinerary} do
-      assert parsed_itinerary = get_validated_itinerary(itinerary, [])
+      assert parsed_itinerary = get_simplified_itinerary(itinerary, [])
       assert parsed_itinerary.legs == []
     end
   end
 
-  defp get_validated_itinerary(itinerary, new_legs) do
+  defp get_simplified_itinerary(itinerary, new_legs) do
     itinerary
     |> update_in([:legs], fn _ -> new_legs end)
     |> List.wrap()
