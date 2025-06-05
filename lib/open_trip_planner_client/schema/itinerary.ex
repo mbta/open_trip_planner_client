@@ -61,18 +61,11 @@ defmodule OpenTripPlannerClient.Schema.Itinerary do
   def group_identifier(itinerary) do
     leg_groups =
       itinerary.legs
-      |> Enum.reject(&short_walking_leg?/1)
+      |> Enum.reject(&Leg.short_walking_leg?/1)
       |> Enum.map(&Leg.group_identifier/1)
 
     {accessible?(itinerary), leg_groups}
   end
-
-  defp short_walking_leg?(%Leg{transit_leg: false, distance: meters}) do
-    miles = Float.ceil(meters / 1609.34, 1)
-    miles <= 0.2
-  end
-
-  defp short_walking_leg?(_), do: false
 
   @doc """
   A series of `Leg.summary/1` for an itinerary, simplified further to 

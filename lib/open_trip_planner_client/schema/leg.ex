@@ -190,4 +190,16 @@ defmodule OpenTripPlannerClient.Schema.Leg do
   def summary(%__MODULE__{route: route}) do
     %{walk_minutes: 0, routes: [route]}
   end
+
+  @doc """
+  Whether we consider this leg exceptionally short, in terms of distance.
+  This is used to simplify display.
+  """
+  @spec short_walking_leg?(__MODULE__.t()) :: boolean()
+  def short_walking_leg?(%__MODULE__{transit_leg: false, distance: meters}) do
+    miles = Float.ceil(meters / 1609.34, 1)
+    miles <= 0.2
+  end
+
+  def short_walking_leg?(_), do: false
 end
