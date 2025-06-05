@@ -98,7 +98,7 @@ defmodule OpenTripPlannerClient.PlanParams do
   @typedoc """
   Specifying an origin or destination for trip planning.
   """
-  @type place_map :: %{latitude: float(), longitude: float()}
+  @type place_map :: %{optional(any()) => any(), latitude: float(), longitude: float()}
 
   @typedoc """
   Customization options for trip planning.
