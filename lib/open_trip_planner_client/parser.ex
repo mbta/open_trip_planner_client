@@ -5,6 +5,7 @@ defmodule OpenTripPlannerClient.Parser do
   """
 
   alias OpenTripPlannerClient.{Error, Plan}
+  alias OpenTripPlannerClient.Schema.{Itinerary, Leg}
 
   @walking_better_than_transit "WALKING_BETTER_THAN_TRANSIT"
 
@@ -36,6 +37,7 @@ defmodule OpenTripPlannerClient.Parser do
          {:ok, %Plan{} = decoded_plan} <- Nestru.decode(plan, Plan) do
       decoded_plan
       |> drop_nonfatal_errors()
+      |> then(&%Plan{&1 | itineraries: simplify_itineraries(&1.itineraries)})
       |> validate_no_routing_errors()
     else
       error ->
@@ -54,5 +56,46 @@ defmodule OpenTripPlannerClient.Parser do
     plan.routing_errors
     |> Enum.reject(&(&1.code == @walking_better_than_transit))
     |> then(&%Plan{plan | routing_errors: &1})
+  end
+
+  @spec simplify_itineraries([Itinerary.t()]) :: [Itinerary.t()]
+  @doc """
+  Making the final output nicer through various means.
+  """
+  def simplify_itineraries(itineraries) do
+    Enum.map(itineraries, fn itinerary ->
+      update_in(itinerary, [:legs], &drop_spurious_stop_terminal_walking_legs/1)
+    end)
+  end
+
+  # Avoid extra tiny walking legs when starting at or ending at a transit stop.
+  # These legs feature a very short walk between a stop and nearby location with the same name.
+  # - initial leg involves this walk from a nearby location to a transit stop
+  # - terminal leg inolves this walk from a transit stop to a nearby location
+  defp drop_spurious_stop_terminal_walking_legs([]), do: []
+  defp drop_spurious_stop_terminal_walking_legs([leg]), do: [leg]
+
+  defp drop_spurious_stop_terminal_walking_legs([first | other_legs] = all_legs) do
+    {last, middle_legs} = List.pop_at(other_legs, -1)
+
+    drop_first? = drop_leg?(first, false, true)
+    drop_last? = drop_leg?(last, true, false)
+
+    case {drop_first?, drop_last?} do
+      {true, true} -> middle_legs
+      {true, false} -> other_legs
+      {false, true} -> [first | middle_legs]
+      {false, false} -> all_legs
+    end
+  end
+
+  defp drop_leg?(leg, has_from_stop?, has_to_stop?) do
+    satisfies_from_condition? = has_from_stop? == not is_nil(leg.from.stop)
+    satisfies_to_condition? = has_to_stop? == not is_nil(leg.to.stop)
+    spurious_walking_leg?(leg) and satisfies_from_condition? and satisfies_to_condition?
+  end
+
+  defp spurious_walking_leg?(leg) do
+    Leg.short_walking_leg?(leg) and leg.from.name == leg.to.name
   end
 end
