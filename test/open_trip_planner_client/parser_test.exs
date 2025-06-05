@@ -161,6 +161,7 @@ defmodule OpenTripPlannerClient.ParserTest do
       leg_to_remove = base_little_leg_to_remove() |> with_stop(:to)
       parsed_itinerary = get_validated_itinerary(itinerary, [leg_to_remove | itinerary.legs])
       refute leg_to_remove in parsed_itinerary.legs
+      assert Enum.all?(itinerary.legs, &Enum.member?(parsed_itinerary.legs, &1))
     end
 
     test "keeps first walking leg if sufficiently distant", %{itinerary: itinerary} do
@@ -235,6 +236,7 @@ defmodule OpenTripPlannerClient.ParserTest do
         get_validated_itinerary(itinerary, List.insert_at(itinerary.legs, -1, leg_to_remove))
 
       refute leg_to_remove in parsed_itinerary.legs
+      assert Enum.all?(itinerary.legs, &Enum.member?(parsed_itinerary.legs, &1))
     end
 
     test "keeps last walking leg if sufficiently distant", %{itinerary: itinerary} do
