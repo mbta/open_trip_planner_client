@@ -150,7 +150,7 @@ defmodule OpenTripPlannerClient.ParserTest do
     end
   end
 
-  describe "validate_itineraries/1" do
+  describe "simplify_itineraries/1" do
     setup do
       %{itinerary: build(:itinerary)}
     end
@@ -298,7 +298,7 @@ defmodule OpenTripPlannerClient.ParserTest do
     itinerary
     |> update_in([:legs], fn _ -> new_legs end)
     |> List.wrap()
-    |> validate_itineraries()
+    |> simplify_itineraries()
     |> List.first()
   end
 

@@ -37,7 +37,7 @@ defmodule OpenTripPlannerClient.Parser do
          {:ok, %Plan{} = decoded_plan} <- Nestru.decode(plan, Plan) do
       decoded_plan
       |> drop_nonfatal_errors()
-      |> then(&%Plan{&1 | itineraries: validate_itineraries(&1.itineraries)})
+      |> then(&%Plan{&1 | itineraries: simplify_itineraries(&1.itineraries)})
       |> validate_no_routing_errors()
     else
       error ->
@@ -58,11 +58,11 @@ defmodule OpenTripPlannerClient.Parser do
     |> then(&%Plan{plan | routing_errors: &1})
   end
 
-  @spec validate_itineraries([Itinerary.t()]) :: [Itinerary.t()]
+  @spec simplify_itineraries([Itinerary.t()]) :: [Itinerary.t()]
   @doc """
   Making the final output nicer through various means.
   """
-  def validate_itineraries(itineraries) do
+  def simplify_itineraries(itineraries) do
     Enum.map(itineraries, fn itinerary ->
       update_in(itinerary, [:legs], &drop_spurious_stop_terminal_walking_legs/1)
     end)
