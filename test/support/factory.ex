@@ -421,20 +421,20 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
 
     You can pass in the number of groups you want and the number of itineraries in each group.
     """
-    def groupable_otp_itineraries(group_count \\ 2, itinerary_count \\ 1) do
+    def groupable_otp_itineraries(group_count \\ 2, itinerary_count \\ 1, attrs \\ Keyword.new()) do
       Enum.map(1..group_count, fn _ ->
-        otp_itineraries(itinerary_count)
+        otp_itineraries(itinerary_count, attrs)
       end)
       |> List.flatten()
       |> Enum.shuffle()
     end
 
     # Create a number of otp itineraries with the same two random legs.
-    defp otp_itineraries(itinerary_count) do
+    defp otp_itineraries(itinerary_count, attrs) do
       [a, b, c] = build_list(3, :place_with_stop)
       a_b_leg = build(:transit_leg, from: a, to: b)
       b_c_leg = build(:transit_leg, from: b, to: c)
-      build_list(itinerary_count, :itinerary, legs: [a_b_leg, b_c_leg])
+      build_list(itinerary_count, :itinerary, attrs |> Keyword.put(:legs, [a_b_leg, b_c_leg]))
     end
 
     def itinerary_group_factory(attrs) do

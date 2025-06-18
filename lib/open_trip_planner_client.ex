@@ -12,7 +12,8 @@ defmodule OpenTripPlannerClient do
   """
   @behaviour OpenTripPlannerClient.Behaviour
 
-  alias OpenTripPlannerClient.{ItineraryGroup, ItineraryTag, Parser, Plan, PlanParams, Util}
+  alias OpenTripPlannerClient.QueryResult
+  alias OpenTripPlannerClient.{ItineraryGroup, ItineraryTag, Parser, PlanParams, Util}
 
   require Logger
 
@@ -26,11 +27,14 @@ defmodule OpenTripPlannerClient do
     tags = if tags, do: tags, else: default_tags(params)
 
     case send_request(params) do
-      {:ok, %Plan{itineraries: itineraries}} ->
-        itineraries
+      {:ok, %QueryResult{actual_plan: actual_plan, ideal_plan: ideal_plan}} ->
+        actual_plan.itineraries
         |> Enum.map(&Map.put_new(&1, :tag, nil))
         |> ItineraryTag.apply_tags(tags)
-        |> ItineraryGroup.groups_from_itineraries(take_from_end: params.arriveBy)
+        |> ItineraryGroup.groups_from_itineraries(
+          ideal_itineraries: ideal_plan.itineraries,
+          take_from_end: params.arriveBy
+        )
         |> then(&{:ok, &1})
 
       error ->
@@ -47,8 +51,8 @@ defmodule OpenTripPlannerClient do
   @spec send_request(PlanParams.t()) :: {:ok, map()} | {:error, any()}
   def send_request(params) do
     with {:ok, %Req.Response{status: 200, body: body}} <- log_response(params),
-         {:ok, plan} <- Parser.validate_body(body) do
-      {:ok, plan}
+         {:ok, query_result} <- Parser.validate_body(body) do
+      {:ok, query_result}
     else
       {:error, _} = error ->
         error

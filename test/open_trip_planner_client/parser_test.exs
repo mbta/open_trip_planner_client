@@ -109,7 +109,7 @@ defmodule OpenTripPlannerClient.ParserTest do
       assert {{:error, errors}, log} =
                with_log(fn ->
                  validate_body(%{
-                   data: %{plan: %{routing_errors: [routing_error]}}
+                   data: %{actual_plan: %{routing_errors: [routing_error]}}
                  })
                end)
 
@@ -125,9 +125,9 @@ defmodule OpenTripPlannerClient.ParserTest do
     end
 
     test "does not treat 'WALKING_BETTER_THAN_TRANSIT' as a fatal error" do
-      assert {:ok, %OpenTripPlannerClient.Plan{}} =
+      assert {:ok, %OpenTripPlannerClient.QueryResult{}} =
                validate_body(%{
-                 data: %{plan: %{routing_errors: [%{code: "WALKING_BETTER_THAN_TRANSIT"}]}}
+                 data: %{actual_plan: %{routing_errors: [%{code: "WALKING_BETTER_THAN_TRANSIT"}]}}
                })
     end
 
@@ -141,7 +141,7 @@ defmodule OpenTripPlannerClient.ParserTest do
     end
 
     test "handles a missing plan" do
-      assert {{:error, :no_data}, _log} =
+      assert {{:error, :no_plan}, _log} =
                with_log(fn ->
                  validate_body(%{
                    data: %{}
