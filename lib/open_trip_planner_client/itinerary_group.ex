@@ -50,6 +50,7 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
     available_groups =
       grouped_available_itineraries
       |> Enum.map(&to_group(&1, opts))
+      |> Enum.sort_by(&tag_and_cost_sorter/1)
       |> Enum.take(Keyword.get(opts, :num_groups, @num_groups))
 
     cost_threshold = available_groups |> Enum.map(&generalized_cost/1) |> Enum.max()
@@ -63,9 +64,9 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
       |> Enum.group_by(&Itinerary.group_identifier/1)
       |> Enum.reject(fn {identifier, _} -> MapSet.member?(available_identifiers, identifier) end)
       |> Enum.map(&to_group(&1, opts |> Keyword.put(:available?, false)))
+      |> Enum.sort_by(&tag_and_cost_sorter/1)
 
-    (unavailable_groups ++ available_groups)
-    |> Enum.sort_by(&tag_and_cost_sorter/1)
+    unavailable_groups ++ available_groups
   end
 
   defp generalized_cost(group) do
