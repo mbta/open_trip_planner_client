@@ -37,7 +37,13 @@ defmodule OpenTripPlannerClient.Parser do
     with {:ok, query_result} <- Nestru.decode(body.data, QueryResult),
          {:ok, actual_plan} <- actual_plan_from_query_result(query_result),
          {:ok, simplified_plan} <- simplify_plan(actual_plan) do
-      {:ok, simplified_ideal_plan} = simplify_plan(query_result.ideal_plan)
+      simplified_ideal_plan =
+        query_result.ideal_plan
+        |> simplify_plan()
+        |> case do
+          {:ok, plan} -> plan
+          _ -> %Plan{routing_errors: [], itineraries: []}
+        end
 
       {:ok,
        query_result

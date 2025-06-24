@@ -148,6 +148,19 @@ defmodule OpenTripPlannerClient.ParserTest do
                  })
                end)
     end
+
+    test "treats routing errors in ideal_plan as just an empty list of itineraries" do
+      code = "PATH_NOT_FOUND"
+      routing_error = build(:routing_error, code: code)
+
+      assert {:ok, %OpenTripPlannerClient.QueryResult{}} =
+               validate_body(%{
+                 data: %{
+                   actual_plan: %{routing_errors: []},
+                   ideal_plan: %{routing_errors: [routing_error]}
+                 }
+               })
+    end
   end
 
   describe "simplify_itineraries/1" do
