@@ -32,7 +32,7 @@ defmodule OpenTripPlannerClient do
         |> Enum.map(&Map.put_new(&1, :tag, nil))
         |> ItineraryTag.apply_tags(tags)
         |> ItineraryGroup.groups_from_itineraries(
-          ideal_itineraries: ideal_plan.itineraries,
+          ideal_itineraries: ideal_plan.itineraries |> ItineraryTag.apply_tags(tags),
           take_from_end: params.arriveBy
         )
         |> then(&{:ok, &1})
