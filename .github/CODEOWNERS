@@ -2,5 +2,4 @@
 
 # Members of the following team will be notified of each pull request, 
 # and merging PRs requires approval by a member of this team.
-* @mbta/dotcom
-* @mbta/mobile-app
+* @mbta/dotcom @mbta/mobile-app
