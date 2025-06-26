@@ -170,6 +170,7 @@ defmodule OpenTripPlannerClient.Schema.Leg do
   end
 
   defp mbta_id(%{gtfs_id: "mbta-ma-us:" <> id}), do: id
+  defp mbta_id(%{gtfs_id: "mbta-ma-us-no-disruptions:" <> id}), do: id
   defp mbta_id(_), do: nil
 
   @doc """
