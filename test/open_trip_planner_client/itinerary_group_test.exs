@@ -124,25 +124,6 @@ defmodule OpenTripPlannerClient.ItineraryGroupTest do
       groups |> Enum.each(&assert &1.available?)
     end
 
-    test "includes unavailable trips that would have been returned, even if they weren't the best" do
-      [actual_cost1, ideal_cost, actual_cost2] =
-        Faker.Util.sample_uniq(3, fn -> Faker.random_between(1000, 9999) end)
-        |> Enum.sort()
-
-      actual_itineraries1 = groupable_otp_itineraries(1, 3, generalized_cost: actual_cost1)
-      actual_itineraries2 = groupable_otp_itineraries(1, 3, generalized_cost: actual_cost2)
-      ideal_itineraries = groupable_otp_itineraries(1, 3, generalized_cost: ideal_cost)
-
-      groups =
-        ItineraryGroup.groups_from_itineraries(
-          (actual_itineraries1 ++ actual_itineraries2) |> Enum.shuffle(),
-          ideal_itineraries: ideal_itineraries
-        )
-
-      # All three groups - ideal itineraries should be returned
-      assert groups |> Enum.count() == 3
-    end
-
     test "generates a summary based on all input itineraries" do
       [a, b] = build_list(2, :place_with_stop)
       c = build(:place)

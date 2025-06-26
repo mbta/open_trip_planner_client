@@ -60,7 +60,7 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
 
     unavailable_groups =
       ideal_itineraries
-      |> Enum.reject(&(&1.generalized_cost > cost_threshold && is_nil(&1.tag)))
+      |> Enum.reject(&(&1.generalized_cost > cost_threshold && is_nil(&1[:tag])))
       |> Enum.group_by(&Itinerary.group_identifier/1)
       |> Enum.reject(fn {identifier, _} -> MapSet.member?(available_identifiers, identifier) end)
       |> Enum.map(&to_group(&1, opts |> Keyword.put(:available?, false)))
