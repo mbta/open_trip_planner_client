@@ -16,7 +16,7 @@ defmodule OpenTripPlannerClient.Gettext do
   use Gettext.Backend,
     default_domain: "open_trip_planner_client",
     default_locale: :en,
-    locales: ["es", "fr", "ht", "pt-BR", "vi", "zh-CN", "zh-TW"],
+    locales: ["es", "fr", "ht", "pt_BR", "vi", "zh_CN", "zh_TW"],
     otp_app: :open_trip_planner_client,
     plural_forms: OpenTripPlannerClient.GettextPlural,
     priv: "priv/gettext"

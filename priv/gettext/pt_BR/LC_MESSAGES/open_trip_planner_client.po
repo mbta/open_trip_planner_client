@@ -8,8 +8,8 @@
 ### to merge POT files into PO files.
 msgid ""
 msgstr ""
-"Language: zh-CN\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
+"Language: pt_BR\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: lib/open_trip_planner_client/schema/step.ex:118
 #, elixir-autogen, elixir-format

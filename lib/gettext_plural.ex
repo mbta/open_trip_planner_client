@@ -14,8 +14,8 @@ defmodule OpenTripPlannerClient.GettextPlural do
   @impl Gettext.Plural
   def nplurals("ht"), do: 2
 
-  # Gettext.Plural forwards xx_YY to xx for plurals, but not xx-YY, so this patches that
-  def nplurals(<<locale::binary-size(2)>> <> "-" <> _sublocale),
+  # Gettext.Plural forwards xx_YY to xx for plurals, but not xx_YY, so this patches that
+  def nplurals(<<locale::binary-size(2)>> <> "_" <> _sublocale),
     do: Gettext.Plural.nplurals(locale)
 
   # Fall back to Gettext.Plural
@@ -26,8 +26,8 @@ defmodule OpenTripPlannerClient.GettextPlural do
   def plural("ht", 1), do: 0
   def plural("ht", _), do: 1
 
-  # Gettext.Plural forwards xx_YY to xx for plurals, but not xx-YY, so this patches that
-  def plural(<<locale::binary-size(2)>> <> "-" <> _sublocale, count),
+  # Gettext.Plural forwards xx_YY to xx for plurals, but not xx_YY, so this patches that
+  def plural(<<locale::binary-size(2)>> <> "_" <> _sublocale, count),
     do: Gettext.Plural.plural(locale, count)
 
   # Fall back to Gettext.Plural

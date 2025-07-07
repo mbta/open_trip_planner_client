@@ -8,7 +8,7 @@
 ### to merge POT files into PO files.
 msgid ""
 msgstr ""
-"Language: zh-CN\n"
+"Language: zh_CN\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
 #: lib/open_trip_planner_client/error.ex:51
