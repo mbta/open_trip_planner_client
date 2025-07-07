@@ -71,6 +71,7 @@ defmodule OpenTripPlannerClient.MixProject do
       {:ex_doc, "~> 0.34", only: :dev, runtime: false},
       {:ex_machina, "~> 2.8", optional: true},
       {:faker, "~> 0.18", optional: true},
+      {:gettext, "~> 0.26"},
       {:jason, "~> 1.4"},
       {:nestru, "~> 1.0"},
       {:req, "~> 0.5"},
