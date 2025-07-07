@@ -113,10 +113,9 @@ defmodule OpenTripPlannerClient.ItineraryGroupTest do
       ideal_itineraries = groupable_otp_itineraries(1, 3, generalized_cost: ideal_cost)
 
       groups =
-        ItineraryGroup.groups_from_itineraries(
-          (actual_itineraries1 ++ actual_itineraries2) |> Enum.shuffle(),
-          ideal_itineraries: ideal_itineraries
-        )
+        (actual_itineraries1 ++ actual_itineraries2)
+        |> Enum.shuffle()
+        |> ItineraryGroup.groups_from_itineraries(ideal_itineraries: ideal_itineraries)
 
       # Only two groups, because actual_itineraries 1 and 2 are returned, but not ideal_itineraries.
       assert groups |> Enum.count() == 2

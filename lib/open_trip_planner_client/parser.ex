@@ -40,10 +40,7 @@ defmodule OpenTripPlannerClient.Parser do
       simplified_ideal_plan =
         query_result.ideal_plan
         |> simplify_plan()
-        |> case do
-          {:ok, plan} -> plan
-          _ -> %Plan{routing_errors: [], itineraries: []}
-        end
+        |> plan_if_ok()
 
       {:ok,
        query_result
@@ -51,6 +48,13 @@ defmodule OpenTripPlannerClient.Parser do
        |> put_in([:ideal_plan], simplified_ideal_plan)}
     else
       error -> error
+    end
+  end
+
+  defp plan_if_ok(maybe_plan) do
+    case maybe_plan do
+      {:ok, plan} -> plan
+      _ -> %Plan{routing_errors: [], itineraries: []}
     end
   end
 
