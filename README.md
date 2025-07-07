@@ -125,6 +125,18 @@ The returned itineraries include an extra field, `"tag"`, which will contain the
 [:shortest_trip, :least_walking, nil] = Enum.map(itineraries, &Map.get(&1, "tag"))
 ```
 
+## Developing
+
+1. These will get checked in CI when opening a PR, so best to run these locally:
+
+```shell
+mix gettext.extract --merge # will update translations
+mix format # will format the Elixir code
+mix credo # shows Elixir code linting errors
+mix dialyzer # shows Elixir code typing errors
+mix test # runs the Elixir unit tests and reports results
+```
+
 ## License
 
 TBD
