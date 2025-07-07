@@ -69,7 +69,6 @@
           {Credo.Check.Consistency.SpaceAroundOperators, []},
           {Credo.Check.Consistency.SpaceInParentheses, []},
           {Credo.Check.Consistency.TabsOrSpaces, []},
-          {Credo.Check.Consistency.UnusedVariableNames, []},
 
           #
           ## Design Checks
@@ -189,6 +188,7 @@
           {Credo.Check.Warning.WrongTestFileExtension, []}
         ],
         disabled: [
+          {Credo.Check.Consistency.UnusedVariableNames, []},
           #
           # Checks scheduled for next check update (opt-in for now, just replace `false` with `[]`)
 
