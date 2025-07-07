@@ -1,0 +1,42 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: fr\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: lib/open_trip_planner_client/error.ex:51
+#, elixir-autogen, elixir-format
+msgid "Destination location is not close enough to any transit stops"
+msgstr ""
+
+#: lib/open_trip_planner_client/error.ex:54
+#, elixir-autogen, elixir-format
+msgid "Location is not close enough to any transit stops"
+msgstr ""
+
+#: lib/open_trip_planner_client/error.ex:59
+#, elixir-autogen, elixir-format
+msgid "No transit connection was found between the origin and destination on this date and time"
+msgstr ""
+
+#: lib/open_trip_planner_client/error.ex:72
+#, elixir-autogen, elixir-format
+msgid "No transit routes found within %{window} of %{formatted_datetime}. Routes may be available at other times."
+msgstr ""
+
+#: lib/open_trip_planner_client/error.ex:48
+#, elixir-autogen, elixir-format
+msgid "Origin location is not close enough to any transit stops"
+msgstr ""
+
+#: lib/open_trip_planner_client/error.ex:66
+#, elixir-autogen, elixir-format
+msgid "Origin or destination location is outside of our service area"
+msgstr ""

@@ -5,6 +5,8 @@ defmodule OpenTripPlannerClient.Error do
   messages based on routing error code and plan details.
   """
 
+  use Gettext, backend: OpenTripPlannerClient.Gettext
+
   alias OpenTripPlannerClient.Plan
   alias Timex.{Duration, Format.Duration.Formatter}
 
@@ -43,28 +45,36 @@ defmodule OpenTripPlannerClient.Error do
        when code in ["LOCATION_NOT_FOUND", "NO_STOPS_IN_RANGE"] do
     case description do
       "Origin" <> _ ->
-        "Origin location is not close enough to any transit stops"
+        dgettext("errors", "Origin location is not close enough to any transit stops")
 
       "Destination" <> _ ->
-        "Destination location is not close enough to any transit stops"
+        dgettext("errors", "Destination location is not close enough to any transit stops")
 
       _ ->
-        "Location is not close enough to any transit stops"
+        dgettext("errors", "Location is not close enough to any transit stops")
     end
   end
 
   defp code_to_message("NO_TRANSIT_CONNECTION", _, _) do
-    "No transit connection was found between the origin and destination on this date and time"
+    dgettext(
+      "errors",
+      "No transit connection was found between the origin and destination on this date and time"
+    )
   end
 
   defp code_to_message("OUTSIDE_BOUNDS", _, _) do
-    "Origin or destination location is outside of our service area"
+    dgettext("errors", "Origin or destination location is outside of our service area")
   end
 
   defp code_to_message("NO_TRANSIT_CONNECTION_IN_SEARCH_WINDOW", _, %Plan{} = plan) do
     with window when is_binary(window) <- humanized_search_window(plan.search_window_used),
          {:ok, formatted_datetime} <- humanized_full_date(plan.date) do
-      "No transit routes found within #{window} of #{formatted_datetime}. Routes may be available at other times."
+      dgettext(
+        "errors",
+        "No transit routes found within %{window} of %{formatted_datetime}. Routes may be available at other times.",
+        window: window,
+        formatted_datetime: formatted_datetime
+      )
     else
       _ ->
         fallback_error_message()
