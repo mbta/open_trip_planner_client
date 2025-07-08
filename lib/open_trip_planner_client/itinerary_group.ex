@@ -176,7 +176,15 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
   def alternatives_text(times, :end),
     do: gettext("Similar trips arrive at %{time}", time: time_list(times))
 
-  defp time(time), do: Timex.format!(time, "%-I:%M", :strftime)
+  defp time(time) do
+    case OpenTripPlannerClient.Cldr.Time.to_string(time, format: :short, period: :variant) do
+      {:ok, formatted_time} ->
+        formatted_time
+
+      _ ->
+        Timex.format!(time, "%-I:%M", :strftime)
+    end
+  end
 
   defp time_list(times) do
     times = Enum.map(times, &time/1)

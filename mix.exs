@@ -69,6 +69,7 @@ defmodule OpenTripPlannerClient.MixProject do
       {:credo, "~> 1.7", only: [:dev, :test]},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:ex_cldr, "~> 2.42"},
+      {:ex_cldr_dates_times, "~> 2.22"},
       {:ex_cldr_lists, "~> 2.11"},
       {:ex_doc, "~> 0.34", only: :dev, runtime: false},
       {:ex_machina, "~> 2.8", optional: true},

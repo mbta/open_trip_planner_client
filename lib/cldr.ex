@@ -12,5 +12,5 @@ defmodule OpenTripPlannerClient.Cldr do
     gettext: OpenTripPlannerClient.Gettext,
     otp_app: :open_trip_planner_client,
     force_locale_download: Mix.env() == :prod,
-    providers: [Cldr.List]
+    providers: [Cldr.Calendar, Cldr.DateTime, Cldr.List, Cldr.Number]
 end
