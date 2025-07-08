@@ -9,3 +9,5 @@ config :open_trip_planner_client,
 config :logger, :default_formatter,
   format: "[$level] $message $metadata\n",
   metadata: [:mfa, :error_code, :file, :line, :crash_reason]
+
+config :ex_cldr, default_locale: "en", default_backend: OpenTripPlannerClient.Cldr
