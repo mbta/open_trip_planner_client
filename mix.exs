@@ -68,6 +68,8 @@ defmodule OpenTripPlannerClient.MixProject do
       {:bypass, "~> 2.1", only: :test},
       {:credo, "~> 1.7", only: [:dev, :test]},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
+      {:ex_cldr, "~> 2.42"},
+      {:ex_cldr_lists, "~> 2.11"},
       {:ex_doc, "~> 0.34", only: :dev, runtime: false},
       {:ex_machina, "~> 2.8", optional: true},
       {:faker, "~> 0.18", optional: true},
