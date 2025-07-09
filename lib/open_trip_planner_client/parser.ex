@@ -51,12 +51,9 @@ defmodule OpenTripPlannerClient.Parser do
     end
   end
 
-  defp plan_if_ok(maybe_plan) do
-    case maybe_plan do
-      {:ok, plan} -> plan
-      _ -> %Plan{routing_errors: [], itineraries: []}
-    end
-  end
+  @spec plan_if_ok({:ok, Plan.t()} | {:error, Error.t()}) :: Plan.t()
+  defp plan_if_ok({:ok, plan}), do: plan
+  defp plan_if_ok(_maybe_plan), do: %Plan{routing_errors: [], itineraries: []}
 
   defp actual_plan_from_query_result(%QueryResult{actual_plan: nil}), do: {:error, :no_plan}
   defp actual_plan_from_query_result(%QueryResult{actual_plan: plan}), do: {:ok, plan}
@@ -73,6 +70,7 @@ defmodule OpenTripPlannerClient.Parser do
     |> validate_no_routing_errors()
   end
 
+  @spec validate_no_routing_errors(Plan.t()) :: {:ok, Plan.t()} | {:error, Error.t()}
   defp validate_no_routing_errors(%Plan{routing_errors: []} = plan), do: {:ok, plan}
   defp validate_no_routing_errors(%Plan{} = plan), do: {:error, Error.from_routing_errors(plan)}
 
