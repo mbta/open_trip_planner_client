@@ -8,7 +8,6 @@ defmodule OpenTripPlannerClient.Error do
   use Gettext, backend: OpenTripPlannerClient.Gettext
 
   alias OpenTripPlannerClient.Plan
-  alias Timex.{Duration, Format.Duration.Formatter}
 
   require Logger
 
@@ -67,32 +66,28 @@ defmodule OpenTripPlannerClient.Error do
   end
 
   defp code_to_message("NO_TRANSIT_CONNECTION_IN_SEARCH_WINDOW", _, %Plan{} = plan) do
-    with window when is_binary(window) <- humanized_search_window(plan.search_window_used),
-         {:ok, formatted_datetime} <- humanized_full_date(plan.date) do
-      dgettext(
-        "errors",
-        "No transit routes found within %{window} of %{formatted_datetime}. Routes may be available at other times.",
-        window: window,
-        formatted_datetime: formatted_datetime
-      )
-    else
-      _ ->
-        fallback_error_message()
-    end
+    window = humanized_search_window(plan.search_window_used)
+    formatted_datetime = humanized_full_date(plan.date)
+
+    dgettext(
+      "errors",
+      "No transit routes found within %{window} of %{formatted_datetime}. Routes may be available at other times.",
+      window: window,
+      formatted_datetime: formatted_datetime
+    )
   end
 
   defp code_to_message(_, _, _), do: fallback_error_message()
 
   defp humanized_search_window(number) do
     number
-    |> Duration.from_seconds()
-    |> Formatter.format(:humanized)
+    |> OpenTripPlannerClient.Format.humanized_localized_duration()
   end
 
   defp humanized_full_date(datetime) do
     datetime
     |> OpenTripPlannerClient.Util.to_local_time()
-    |> Timex.format("{h12}:{m}{am} on {WDfull}, {Mfull} {D}")
+    |> OpenTripPlannerClient.Format.humanized_localized_date_at_time()
   end
 
   @spec fallback_error_message :: String.t()
