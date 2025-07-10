@@ -11,17 +11,17 @@ msgstr ""
 "Language: en\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: lib/open_trip_planner_client/error.ex:51
+#: lib/open_trip_planner_client/error.ex:50
 #, elixir-autogen, elixir-format
 msgid "Destination location is not close enough to any transit stops"
 msgstr ""
 
-#: lib/open_trip_planner_client/error.ex:54
+#: lib/open_trip_planner_client/error.ex:53
 #, elixir-autogen, elixir-format
 msgid "Location is not close enough to any transit stops"
 msgstr ""
 
-#: lib/open_trip_planner_client/error.ex:59
+#: lib/open_trip_planner_client/error.ex:58
 #, elixir-autogen, elixir-format
 msgid "No transit connection was found between the origin and destination on this date and time"
 msgstr ""
@@ -31,17 +31,17 @@ msgstr ""
 msgid "No transit routes found within %{window} of %{formatted_datetime}. Routes may be available at other times."
 msgstr ""
 
-#: lib/open_trip_planner_client/error.ex:48
+#: lib/open_trip_planner_client/error.ex:47
 #, elixir-autogen, elixir-format
 msgid "Origin location is not close enough to any transit stops"
 msgstr ""
 
-#: lib/open_trip_planner_client/error.ex:66
+#: lib/open_trip_planner_client/error.ex:65
 #, elixir-autogen, elixir-format
 msgid "Origin or destination location is outside of our service area"
 msgstr ""
 
-#: lib/open_trip_planner_client/error.ex:100
+#: lib/open_trip_planner_client/error.ex:95
 #, elixir-autogen, elixir-format
 msgid "Please try again or send us feedback at mbta.com/customer-support"
 msgstr ""
