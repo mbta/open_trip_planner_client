@@ -40,3 +40,8 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Origin or destination location is outside of our service area"
 msgstr ""
+
+#: lib/open_trip_planner_client/error.ex:100
+#, elixir-autogen, elixir-format
+msgid "Please try again or send us feedback at mbta.com/customer-support"
+msgstr ""

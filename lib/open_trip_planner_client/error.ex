@@ -95,11 +95,9 @@ defmodule OpenTripPlannerClient.Error do
     |> Timex.format("{h12}:{m}{am} on {WDfull}, {Mfull} {D}")
   end
 
-  defp fallback_error_message do
-    Application.get_env(
-      :open_trip_planner_client,
-      :fallback_error_message
-    )
+  @spec fallback_error_message :: String.t()
+  def fallback_error_message do
+    dgettext("errors", "Please try again or send us feedback at mbta.com/customer-support")
   end
 
   defp log_error(errors) when is_list(errors), do: Enum.each(errors, &log_error/1)
