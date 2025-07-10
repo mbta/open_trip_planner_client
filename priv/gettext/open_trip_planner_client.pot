@@ -1,0 +1,129 @@
+## This file is a PO Template file.
+##
+## "msgid"s here are often extracted from source code.
+## Add new messages manually only if they're dynamic
+## messages that can't be statically extracted.
+##
+## Run "mix gettext.extract" to bring this file up to
+## date. Leave "msgstr"s empty as changing them here has no
+## effect: edit them in PO (.po) files instead.
+#
+msgid ""
+msgstr ""
+
+#: lib/open_trip_planner_client/schema/step.ex:118
+#, elixir-autogen, elixir-format
+msgid "Continue"
+msgstr ""
+
+#: lib/open_trip_planner_client/schema/step.ex:111
+#, elixir-autogen, elixir-format
+msgid "Depart"
+msgstr ""
+
+#: lib/open_trip_planner_client/schema/step.ex:124
+#, elixir-autogen, elixir-format
+msgid "Enter the station"
+msgstr ""
+
+#: lib/open_trip_planner_client/schema/step.ex:119
+#: lib/open_trip_planner_client/schema/step.ex:120
+#, elixir-autogen, elixir-format
+msgid "Enter the traffic circle"
+msgstr ""
+
+#: lib/open_trip_planner_client/schema/step.ex:125
+#, elixir-autogen, elixir-format
+msgid "Exit the station"
+msgstr ""
+
+#: lib/open_trip_planner_client/schema/step.ex:126
+#, elixir-autogen, elixir-format
+msgid "Follow signs"
+msgstr ""
+
+#: lib/open_trip_planner_client/schema/step.ex:114
+#, elixir-autogen, elixir-format
+msgid "Hard left"
+msgstr ""
+
+#: lib/open_trip_planner_client/schema/step.ex:117
+#, elixir-autogen, elixir-format
+msgid "Hard right"
+msgstr ""
+
+#: lib/open_trip_planner_client/schema/step.ex:113
+#, elixir-autogen, elixir-format
+msgid "Left"
+msgstr ""
+
+#: lib/open_trip_planner_client/schema/step.ex:122
+#: lib/open_trip_planner_client/schema/step.ex:123
+#, elixir-autogen, elixir-format
+msgid "Make a U-turn"
+msgstr ""
+
+#: lib/open_trip_planner_client/schema/step.ex:116
+#, elixir-autogen, elixir-format
+msgid "Right"
+msgstr ""
+
+#: lib/open_trip_planner_client/schema/step.ex:112
+#, elixir-autogen, elixir-format
+msgid "Slightly left"
+msgstr ""
+
+#: lib/open_trip_planner_client/schema/step.ex:115
+#, elixir-autogen, elixir-format
+msgid "Slightly right"
+msgstr ""
+
+#: lib/open_trip_planner_client/schema/step.ex:121
+#, elixir-autogen, elixir-format
+msgid "Take the elevator"
+msgstr ""
+
+#: lib/open_trip_planner_client/schema/step.ex:129
+#, elixir-autogen, elixir-format
+msgid "for"
+msgstr ""
+
+#: lib/open_trip_planner_client/schema/step.ex:132
+#, elixir-autogen, elixir-format
+msgid "onto"
+msgstr ""
+
+#: lib/open_trip_planner_client/schema/step.ex:130
+#, elixir-autogen, elixir-format
+msgid "through"
+msgstr ""
+
+#: lib/open_trip_planner_client/schema/step.ex:131
+#, elixir-autogen, elixir-format
+msgid "towards"
+msgstr ""
+
+#: lib/open_trip_planner_client/itinerary_group.ex:171
+#, elixir-autogen, elixir-format
+msgid "Similar trip arrives at %{time}"
+msgstr ""
+
+#: lib/open_trip_planner_client/itinerary_group.ex:168
+#, elixir-autogen, elixir-format
+msgid "Similar trip departs at %{time}"
+msgstr ""
+
+#: lib/open_trip_planner_client/itinerary_group.ex:177
+#, elixir-autogen, elixir-format
+msgid "Similar trips arrive at %{time}"
+msgstr ""
+
+#: lib/open_trip_planner_client/itinerary_group.ex:174
+#, elixir-autogen, elixir-format
+msgid "Similar trips depart at %{time}"
+msgstr ""
+
+#: lib/open_trip_planner_client/schema/step.ex:102
+#, elixir-autogen, elixir-format
+msgid "Transfer"
+msgstr ""

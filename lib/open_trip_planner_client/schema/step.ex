@@ -5,6 +5,7 @@ defmodule OpenTripPlannerClient.Schema.Step do
   https://docs.opentripplanner.org/api/dev-2.x/graphql-gtfs/types/step
   """
 
+  use Gettext, backend: OpenTripPlannerClient.Gettext
   use OpenTripPlannerClient.Schema
 
   @absolute_direction [
@@ -98,7 +99,7 @@ defmodule OpenTripPlannerClient.Schema.Step do
   """
   @spec walk_summary(t()) :: String.t()
   def walk_summary(%__MODULE__{relative_direction: :DEPART, street_name: "Transfer"}),
-    do: "Transfer"
+    do: gettext("Transfer")
 
   def walk_summary(%__MODULE__{
         relative_direction: relative_direction,
@@ -107,26 +108,26 @@ defmodule OpenTripPlannerClient.Schema.Step do
     "#{human_relative_direction(relative_direction)} #{human_relative_preposition(relative_direction)} #{street_name}"
   end
 
-  defp human_relative_direction(:DEPART), do: "Depart"
-  defp human_relative_direction(:SLIGHTLY_LEFT), do: "Slightly left"
-  defp human_relative_direction(:LEFT), do: "Left"
-  defp human_relative_direction(:HARD_LEFT), do: "Hard left"
-  defp human_relative_direction(:SLIGHTLY_RIGHT), do: "Slightly right"
-  defp human_relative_direction(:RIGHT), do: "Right"
-  defp human_relative_direction(:HARD_RIGHT), do: "Hard right"
-  defp human_relative_direction(:CONTINUE), do: "Continue"
-  defp human_relative_direction(:CIRCLE_CLOCKWISE), do: "Enter the traffic circle"
-  defp human_relative_direction(:CIRCLE_COUNTERCLOCKWISE), do: "Enter the traffic circle"
-  defp human_relative_direction(:ELEVATOR), do: "Take the elevator"
-  defp human_relative_direction(:UTURN_LEFT), do: "Make a U-turn"
-  defp human_relative_direction(:UTURN_RIGHT), do: "Make a U-turn"
-  defp human_relative_direction(:ENTER_STATION), do: "Enter the station"
-  defp human_relative_direction(:EXIT_STATION), do: "Exit the station"
-  defp human_relative_direction(:FOLLOW_SIGNS), do: "Follow signs"
+  defp human_relative_direction(:DEPART), do: gettext("Depart")
+  defp human_relative_direction(:SLIGHTLY_LEFT), do: gettext("Slightly left")
+  defp human_relative_direction(:LEFT), do: gettext("Left")
+  defp human_relative_direction(:HARD_LEFT), do: gettext("Hard left")
+  defp human_relative_direction(:SLIGHTLY_RIGHT), do: gettext("Slightly right")
+  defp human_relative_direction(:RIGHT), do: gettext("Right")
+  defp human_relative_direction(:HARD_RIGHT), do: gettext("Hard right")
+  defp human_relative_direction(:CONTINUE), do: gettext("Continue")
+  defp human_relative_direction(:CIRCLE_CLOCKWISE), do: gettext("Enter the traffic circle")
+  defp human_relative_direction(:CIRCLE_COUNTERCLOCKWISE), do: gettext("Enter the traffic circle")
+  defp human_relative_direction(:ELEVATOR), do: gettext("Take the elevator")
+  defp human_relative_direction(:UTURN_LEFT), do: gettext("Make a U-turn")
+  defp human_relative_direction(:UTURN_RIGHT), do: gettext("Make a U-turn")
+  defp human_relative_direction(:ENTER_STATION), do: gettext("Enter the station")
+  defp human_relative_direction(:EXIT_STATION), do: gettext("Exit the station")
+  defp human_relative_direction(:FOLLOW_SIGNS), do: gettext("Follow signs")
   defp human_relative_direction(_), do: "Go"
 
-  defp human_relative_preposition(:FOLLOW_SIGNS), do: "for"
-  defp human_relative_preposition(:ENTER_STATION), do: "through"
-  defp human_relative_preposition(:EXIT_STATION), do: "towards"
-  defp human_relative_preposition(_), do: "onto"
+  defp human_relative_preposition(:FOLLOW_SIGNS), do: gettext("for")
+  defp human_relative_preposition(:ENTER_STATION), do: gettext("through")
+  defp human_relative_preposition(:EXIT_STATION), do: gettext("towards")
+  defp human_relative_preposition(_), do: gettext("onto")
 end

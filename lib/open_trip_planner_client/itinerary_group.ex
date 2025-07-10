@@ -6,6 +6,8 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
   But, this does not include walking legs that are less than 0.2 miles.
   """
 
+  use Gettext, backend: OpenTripPlannerClient.Gettext
+
   alias OpenTripPlannerClient.ItineraryTag
   alias OpenTripPlannerClient.Schema.{Itinerary, Leg}
 
@@ -161,14 +163,18 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
   """
   @spec alternatives_text([DateTime.t()], :start | :end) :: String.t() | nil
   def alternatives_text([], _), do: nil
-  def alternatives_text([time], :start), do: "Similar trip departs at #{time(time)}"
-  def alternatives_text([time], :end), do: "Similar trip arrives at #{time(time)}"
+
+  def alternatives_text([time], :start),
+    do: gettext("Similar trip departs at %{time}", time: time(time))
+
+  def alternatives_text([time], :end),
+    do: gettext("Similar trip arrives at %{time}", time: time(time))
 
   def alternatives_text(times, :start),
-    do: "Similar trips depart at #{Enum.map_join(times, ", ", &time/1)}"
+    do: gettext("Similar trips depart at %{time}", time: Enum.map_join(times, ", ", &time/1))
 
   def alternatives_text(times, :end),
-    do: "Similar trips arrive at #{Enum.map_join(times, ", ", &time/1)}"
+    do: gettext("Similar trips arrive at %{time}", time: Enum.map_join(times, ", ", &time/1))
 
   defp time(time), do: Timex.format!(time, "%-I:%M", :strftime)
 end

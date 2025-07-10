@@ -23,8 +23,7 @@ defmodule OpenTripPlannerClient.ErrorTest do
                  build(:plan, routing_errors: [build(:routing_error, %{code: "Fake"})])
                )
 
-      assert custom_fallback ==
-               Application.get_env(:open_trip_planner_client, :fallback_error_message)
+      assert custom_fallback == fallback_error_message()
     end
 
     test "displays differing message based on error described for origin vs destination" do

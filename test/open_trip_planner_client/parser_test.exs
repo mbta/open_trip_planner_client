@@ -116,12 +116,13 @@ defmodule OpenTripPlannerClient.ParserTest do
       assert [
                %OpenTripPlannerClient.Error{
                  details: ^routing_error,
-                 message: "Something went wrong.",
+                 message: fallback_message,
                  type: :routing_error
                }
              ] = errors
 
       assert log =~ code
+      assert fallback_message == OpenTripPlannerClient.Error.fallback_error_message()
     end
 
     test "does not treat 'WALKING_BETTER_THAN_TRANSIT' as a fatal error" do
