@@ -45,17 +45,17 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
   def groups_from_itineraries(itineraries, opts \\ []) do
     ideal_itineraries = opts |> Keyword.get(:ideal_itineraries, [])
 
-    available_groups =
-      itineraries
-      |> to_groups(opts)
-      |> Enum.take(Keyword.get(opts, :num_groups, @num_groups))
+    available_groups = itineraries |> to_groups(opts)
 
     unavailable_groups =
       ideal_itineraries
       |> filter_unavailable_itineraries(available_groups)
       |> to_groups(opts |> Keyword.put(:available?, false))
 
-    unavailable_groups ++ available_groups
+    truncated_available_groups =
+      available_groups |> Enum.take(Keyword.get(opts, :num_groups, @num_groups))
+
+    unavailable_groups ++ truncated_available_groups
   end
 
   defp filter_unavailable_itineraries(ideal_itineraries, available_groups) do
