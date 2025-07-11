@@ -10,13 +10,17 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
   alias OpenTripPlannerClient.Schema.{Itinerary, Leg}
 
   @type t :: %__MODULE__{
+          available?: boolean(),
+          identifier: tuple(),
           itineraries: [Itinerary.t()],
-          summary: [Leg.leg_summary()],
           representative_index: non_neg_integer(),
+          summary: [Leg.leg_summary()],
           time_key: :start | :end
         }
 
   defstruct [
+    :available?,
+    :identifier,
     :itineraries,
     :summary,
     :representative_index,
@@ -39,11 +43,49 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
   """
   @spec groups_from_itineraries([Itinerary.t()], Keyword.t()) :: [%__MODULE__{}]
   def groups_from_itineraries(itineraries, opts \\ []) do
+    ideal_itineraries = opts |> Keyword.get(:ideal_itineraries, [])
+
+    available_groups = itineraries |> to_groups(opts)
+
+    unavailable_groups =
+      ideal_itineraries
+      |> filter_unavailable_itineraries(available_groups)
+      |> to_groups(opts |> Keyword.put(:available?, false))
+
+    truncated_available_groups =
+      available_groups |> Enum.take(Keyword.get(opts, :num_groups, @num_groups))
+
+    unavailable_groups ++ truncated_available_groups
+  end
+
+  defp filter_unavailable_itineraries(ideal_itineraries, available_groups) do
+    cost_threshold =
+      available_groups
+      |> Stream.map(&generalized_cost/1)
+      |> Enum.min()
+
+    available_identifiers = available_groups |> MapSet.new(& &1.identifier)
+
+    ideal_itineraries
+    |> Enum.filter(fn itinerary ->
+      unavailable? = !MapSet.member?(available_identifiers, Itinerary.group_identifier(itinerary))
+      cost_below_threshold? = itinerary.generalized_cost <= cost_threshold
+      has_tag? = !is_nil(itinerary[:tag])
+
+      unavailable? && (cost_below_threshold? || has_tag?)
+    end)
+  end
+
+  defp to_groups(itineraries, opts) do
     itineraries
     |> Enum.group_by(&Itinerary.group_identifier/1)
     |> Enum.map(&to_group(&1, opts))
     |> Enum.sort_by(&tag_and_cost_sorter/1)
-    |> Enum.take(Keyword.get(opts, :num_groups, @num_groups))
+  end
+
+  defp generalized_cost(group) do
+    itinerary = group |> representative_itinerary()
+    itinerary |> then(& &1.generalized_cost)
   end
 
   defp truncate_list(grouped_itineraries, opts) do
@@ -58,16 +100,18 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
     end
   end
 
-  defp to_group({_, all_itineraries}, opts) do
+  defp to_group({identifier, all_itineraries}, opts) do
     limited_itineraries = truncate_list(all_itineraries, opts)
     summary = summary(all_itineraries)
     representative_index = if(opts[:take_from_end], do: length(limited_itineraries) - 1, else: 0)
     time_key = if(opts[:take_from_end], do: :end, else: :start)
 
     %__MODULE__{
+      available?: opts |> Keyword.get(:available?, true),
+      identifier: identifier,
       itineraries: limited_itineraries,
-      summary: summary,
       representative_index: representative_index,
+      summary: summary,
       time_key: time_key
     }
   end
@@ -121,11 +165,17 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
     |> then(&%{routes: [], walk_minutes: &1})
   end
 
-  # Sorting first by tag priority, then by increasing generalized cost
+  # Sorting first by availability (unavailable trips first), then tag
+  # priority, then by increasing generalized cost
   @spec tag_and_cost_sorter(__MODULE__.t()) :: tuple()
   defp tag_and_cost_sorter(itinerary_group) do
     itinerary = representative_itinerary(itinerary_group)
-    {ItineraryTag.tag_order(itinerary[:tag]), itinerary[:generalized_cost]}
+
+    {
+      itinerary_group.available?,
+      ItineraryTag.tag_order(itinerary[:tag]),
+      itinerary[:generalized_cost]
+    }
   end
 
   @spec representative_itinerary(__MODULE__.t()) :: Itinerary.t()
