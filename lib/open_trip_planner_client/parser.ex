@@ -53,7 +53,7 @@ defmodule OpenTripPlannerClient.Parser do
 
   @spec plan_if_ok({:ok, Plan.t()} | {:error, Error.t()}) :: Plan.t()
   defp plan_if_ok({:ok, plan}), do: plan
-  defp plan_if_ok(_maybe_plan), do: %Plan{routing_errors: [], itineraries: []}
+  defp plan_if_ok(_), do: %Plan{routing_errors: [], itineraries: []}
 
   defp actual_plan_from_query_result(%QueryResult{actual_plan: nil}), do: {:error, :no_plan}
   defp actual_plan_from_query_result(%QueryResult{actual_plan: plan}), do: {:ok, plan}
