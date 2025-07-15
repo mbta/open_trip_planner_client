@@ -442,6 +442,7 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
       index = attrs[:representative_index] || Faker.random_between(0, Enum.count(itineraries) - 1)
 
       %OpenTripPlannerClient.ItineraryGroup{
+        available?: attrs |> Map.get(:available?, true),
         itineraries: itineraries,
         summary: ItineraryGroup.summary(itineraries),
         representative_index: index,
