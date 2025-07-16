@@ -432,8 +432,11 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
     # Create a number of otp itineraries with the same two random legs.
     defp otp_itineraries(itinerary_count, attrs) do
       [a, b, c] = build_list(3, :place_with_stop)
-      a_b_leg = build(:transit_leg, from: a, to: b)
-      b_c_leg = build(:transit_leg, from: b, to: c)
+
+      {route_type, attrs} = attrs |> Keyword.pop(:route_type, 1)
+
+      a_b_leg = build(:transit_leg, from: a, to: b, route: build(:route, type: route_type))
+      b_c_leg = build(:transit_leg, from: b, to: c, route: build(:route, type: route_type))
       build_list(itinerary_count, :itinerary, attrs |> Keyword.put(:legs, [a_b_leg, b_c_leg]))
     end
 

@@ -123,6 +123,27 @@ defmodule OpenTripPlannerClient.ItineraryGroupTest do
       groups |> Enum.each(&assert &1.available?)
     end
 
+    test "does not count trips as unavailable if they are bus-only" do
+      [ideal_cost, actual_cost] =
+        Faker.Util.sample_uniq(2, fn -> Faker.random_between(1000, 9999) end)
+        |> Enum.sort()
+
+      actual_itineraries = groupable_otp_itineraries(1, 3, generalized_cost: actual_cost)
+
+      ideal_itineraries =
+        groupable_otp_itineraries(1, 3, generalized_cost: ideal_cost, route_type: 3)
+
+      groups =
+        ItineraryGroup.groups_from_itineraries(actual_itineraries,
+          ideal_itineraries: ideal_itineraries
+        )
+
+      assert groups |> Enum.count() == 1
+      [%ItineraryGroup{} = available_group] = groups
+
+      assert available_group.available?
+    end
+
     test "generates a summary based on all input itineraries" do
       [a, b] = build_list(2, :place_with_stop)
       c = build(:place)

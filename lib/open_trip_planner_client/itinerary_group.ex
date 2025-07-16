@@ -71,8 +71,9 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
       unavailable? = !MapSet.member?(available_identifiers, Itinerary.group_identifier(itinerary))
       cost_below_threshold? = itinerary.generalized_cost <= cost_threshold
       has_tag? = !is_nil(itinerary[:tag])
+      all_buses? = Itinerary.all_mbta_bus_legs?(itinerary.legs)
 
-      unavailable? && (cost_below_threshold? || has_tag?)
+      unavailable? && (cost_below_threshold? || has_tag?) && !all_buses?
     end)
   end
 

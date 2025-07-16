@@ -45,7 +45,7 @@ defmodule OpenTripPlannerClient.Schema.Itinerary do
     all_mbta_bus_legs?(legs)
   end
 
-  defp all_mbta_bus_legs?(legs) do
+  def all_mbta_bus_legs?(legs) do
     legs
     |> Enum.filter(& &1.transit_leg)
     |> Enum.all?(&(&1.route.type == 3 && &1.agency.name == "MBTA"))
