@@ -29,6 +29,7 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
 
   @max_per_group 4
   @num_groups 5
+  @num_unavailable_groups 2
 
   @doc """
   From a large list of itineraries, collect them into #{@num_groups} groups of at most
@@ -51,6 +52,7 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
       ideal_itineraries
       |> filter_unavailable_itineraries(available_groups)
       |> to_groups(opts |> Keyword.put(:available?, false))
+      |> Enum.take(Keyword.get(opts, :num_unavailable_groups, @num_unavailable_groups))
 
     truncated_available_groups =
       available_groups |> Enum.take(Keyword.get(opts, :num_groups, @num_groups))
