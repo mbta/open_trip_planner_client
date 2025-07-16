@@ -5,6 +5,7 @@ defmodule Mix.Tasks.UpdateFixture do
   alias OpenTripPlannerClient.PlanParams
 
   @spec run(command_line_args :: [binary]) :: any()
+  @shortdoc "Update the Alewife-to-Franlin-Park fixture"
   def run(_) do
     Mix.Task.run("app.start")
 
