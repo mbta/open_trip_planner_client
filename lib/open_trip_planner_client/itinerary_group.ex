@@ -44,39 +44,33 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
   """
   @spec groups_from_itineraries([Itinerary.t()], Keyword.t()) :: [%__MODULE__{}]
   def groups_from_itineraries(itineraries, opts \\ []) do
-    ideal_itineraries = opts |> Keyword.get(:ideal_itineraries, [])
+    groups = itineraries |> to_groups(opts)
 
-    available_groups = itineraries |> to_groups(opts)
-
-    unavailable_groups =
-      ideal_itineraries
-      |> filter_unavailable_itineraries(available_groups)
-      |> to_groups(opts |> Keyword.put(:available?, false))
-      |> Enum.take(Keyword.get(opts, :num_unavailable_groups, @num_unavailable_groups))
-
-    truncated_available_groups =
-      available_groups |> Enum.take(Keyword.get(opts, :num_groups, @num_groups))
-
-    unavailable_groups ++ truncated_available_groups
+    opts
+    |> Keyword.get(:ideal_itineraries, [])
+    |> to_groups(opts |> Keyword.put(:available?, false))
+    |> select_unavailable_groups(groups)
+    |> Enum.take(Keyword.get(opts, :num_unavailable_groups, @num_unavailable_groups))
+    |> Kernel.++(Enum.take(groups, Keyword.get(opts, :num_groups, @num_groups)))
   end
 
-  defp filter_unavailable_itineraries(ideal_itineraries, available_groups) do
-    cost_threshold =
-      available_groups
+  # groups generated from itineraries in the ideal GTFS feed are considered
+  # for display as 'unavailable' if they meet all the following conditions:
+  # - not solely bus legs (it's too tricky to select the correct groups)
+  # - generalized cost is better than all groups from the actual GTFS
+  # - summarized walk/transit legs isn't already present in the actual groups
+  defp select_unavailable_groups(ideal_groups, actual_groups) do
+    group_summaries = Enum.map(actual_groups, & &1.summary)
+
+    group_cost_threshold =
+      actual_groups
       |> Stream.map(&generalized_cost/1)
       |> Enum.min()
 
-    available_identifiers = available_groups |> MapSet.new(& &1.identifier)
-
-    ideal_itineraries
-    |> Enum.filter(fn itinerary ->
-      unavailable? = !MapSet.member?(available_identifiers, Itinerary.group_identifier(itinerary))
-      cost_below_threshold? = itinerary.generalized_cost <= cost_threshold
-      has_tag? = !is_nil(itinerary[:tag])
-      all_buses? = Itinerary.all_mbta_bus_legs?(itinerary.legs)
-
-      unavailable? && (cost_below_threshold? || has_tag?) && !all_buses?
-    end)
+    ideal_groups
+    |> Stream.reject(&all_mbta_bus_legs?/1)
+    |> Stream.reject(&(generalized_cost(&1) >= group_cost_threshold))
+    |> Stream.reject(&(&1.summary in group_summaries))
   end
 
   defp to_groups(itineraries, opts) do
@@ -86,9 +80,17 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
     |> Enum.sort_by(&tag_and_cost_sorter/1)
   end
 
+  defp all_mbta_bus_legs?(group) do
+    group
+    |> representative_itinerary()
+    |> Map.get(:legs)
+    |> Itinerary.all_mbta_bus_legs?()
+  end
+
   defp generalized_cost(group) do
-    itinerary = group |> representative_itinerary()
-    itinerary |> then(& &1.generalized_cost)
+    group
+    |> representative_itinerary()
+    |> Map.get(:generalized_cost)
   end
 
   defp truncate_list(grouped_itineraries, opts) do
