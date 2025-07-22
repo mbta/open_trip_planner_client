@@ -66,6 +66,7 @@ defmodule OpenTripPlannerClient do
       decode_json: [keys: &Util.to_snake_keys/1]
     ]
     |> Req.new()
+    |> Req.Request.put_header("accept-language", params.locale)
     |> AbsintheClient.attach()
     |> Req.post(graphql: {@plan_query, params})
   end
