@@ -3,6 +3,7 @@ query TripPlan(
   $toPlace: String!
   $date: String
   $time: String
+  $locale: String
   $arriveBy: Boolean
   $wheelchair: Boolean
   $transportModes: [TransportMode]
@@ -13,6 +14,7 @@ query TripPlan(
     toPlace: $toPlace
     date: $date
     time: $time
+    locale: $locale,
     arriveBy: $arriveBy
     wheelchair: $wheelchair
     transportModes: $transportModes
@@ -25,9 +27,6 @@ query TripPlan(
 
     # Increased from 2.0 to reduce number of itineraries with significant walking
     walkReluctance: 5.0
-
-    # Theoretically can be configured in the future for visitors using translation?
-    locale: "en"
 
     # Prefer MBTA transit legs over Massport or others.
     preferred: { agencies: "mbta-ma-us:1" }
