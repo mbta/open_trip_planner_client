@@ -325,6 +325,7 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
         toPlace: build(:place_param),
         date: build(:date_param),
         time: build(:time_param),
+        locale: Faker.Util.pick(~w(en es ht vi)),
         arriveBy: Faker.Util.pick([true, false]),
         transportModes: build(:modes_param),
         wheelchair: Faker.Util.pick([true, false])
