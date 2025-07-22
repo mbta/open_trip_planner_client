@@ -13,6 +13,7 @@ defmodule OpenTripPlannerClient.PlanParams do
     :date,
     :time,
     arriveBy: false,
+    locale: "en",
     numItineraries: 5,
     transportModes: [%{mode: :WALK}, %{mode: :TRANSIT}],
     wheelchair: false
@@ -28,6 +29,11 @@ defmodule OpenTripPlannerClient.PlanParams do
   Date of departure or arrival in format YYYY-MM-DD. Default value: current date
   """
   @type date :: String.t()
+
+  @typedoc """
+  A IETF BCP 47 language tag. Default value: en
+  """
+  @type locale :: String.t()
 
   @typedoc """
   The place where the itinerary begins or ends in format name::place, where
@@ -107,6 +113,7 @@ defmodule OpenTripPlannerClient.PlanParams do
     `false`, depart at a certain time. Defalts to false.
   * `:datetime` - The DateTime to depart from the origin or arrive at the
     destination. Defaults to now.
+  * `:locale` - Two-letter language code (ISO 639-1) used for returned text. Note: only part of the data has translations available and names of stops and POIs are returned in their default language. Due to missing translations, it is sometimes possible that returned text uses a mixture of two languages.
   * `:modes` - The transit modes to be used in the plan. Defaults to
     [:WALK, :TRANSIT]
   * `:num_itineraries` - The maximum number of itineraries to return. Defaults
@@ -118,6 +125,7 @@ defmodule OpenTripPlannerClient.PlanParams do
   @type opts :: [
           arrive_by: boolean(),
           datetime: DateTime.t(),
+          locale: locale(),
           modes: [mode_t()],
           num_itineraries: non_neg_integer(),
           wheelchair: boolean()
@@ -130,6 +138,7 @@ defmodule OpenTripPlannerClient.PlanParams do
           arriveBy: arrive_by(),
           fromPlace: place(),
           date: date(),
+          locale: locale(),
           numItineraries: integer(),
           time: time(),
           toPlace: place(),
@@ -155,6 +164,7 @@ defmodule OpenTripPlannerClient.PlanParams do
       toPlace: to_place_param(to),
       arriveBy: Keyword.get(opts, :arrive_by, false),
       date: to_date_param(datetime),
+      locale: Keyword.get(opts, :locale, "en"),
       numItineraries: Keyword.get(opts, :num_itineraries, 5),
       time: to_time_param(datetime),
       transportModes: to_modes_param(modes),
