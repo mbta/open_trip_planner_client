@@ -71,6 +71,25 @@ defmodule OpenTripPlannerClient.HttpTest do
       assert Enum.map(tagged, &representative_tag/1) |> Enum.all?()
     end
 
+    test "uses locale", %{bypass: bypass} do
+      locale = "es"
+
+      Bypass.expect_once(bypass, fn conn ->
+        assert {"accept-language", locale} in conn.req_headers
+
+        conn
+        |> Plug.Conn.put_resp_content_type("application/json")
+        |> Plug.Conn.send_resp(:ok, @fixture)
+      end)
+
+      {:ok, itinerary_groups} =
+        build(:plan_params, locale: locale)
+        |> plan()
+
+      group = List.first(itinerary_groups)
+      assert group.alternatives_text =~ "Viaje"
+    end
+
     defp representative_tag(group) do
       ItineraryGroup.representative_itinerary(group)
       |> Map.get(:tag)
