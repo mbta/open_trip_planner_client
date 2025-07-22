@@ -66,12 +66,22 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
     representative_index = if(opts[:take_from_end], do: length(limited_itineraries) - 1, else: 0)
     time_key = if(opts[:take_from_end], do: :end, else: :start)
 
-    %__MODULE__{
+    base = %__MODULE__{
       itineraries: limited_itineraries,
       summary: summary,
       representative_index: representative_index,
       time_key: time_key
     }
+
+    opts
+    |> Keyword.get(:locale, "en")
+    |> Gettext.with_locale(fn ->
+      base
+      |> Map.put(:alternatives_text, alternatives_text(base))
+      |> Map.put(:all_times, all_times(base))
+      # TODO: Need to add walk_summary
+      |> Map.put(:representative_itinerary, representative_itinerary(base))
+    end)
   end
 
   @doc """

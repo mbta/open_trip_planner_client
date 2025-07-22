@@ -30,7 +30,10 @@ defmodule OpenTripPlannerClient do
         itineraries
         |> Enum.map(&Map.put_new(&1, :tag, nil))
         |> ItineraryTag.apply_tags(tags)
-        |> ItineraryGroup.groups_from_itineraries(take_from_end: params.arriveBy)
+        |> ItineraryGroup.groups_from_itineraries(
+          take_from_end: params.arriveBy,
+          locale: params.locale
+        )
         |> then(&{:ok, &1})
 
       error ->
