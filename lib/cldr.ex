@@ -10,7 +10,6 @@ defmodule OpenTripPlannerClient.Cldr do
     default_locale: "en",
     locales: ["es", "fr", "ht", "pt-BR", "vi", "zh-CN", "zh-TW"],
     gettext: OpenTripPlannerClient.Gettext,
-    otp_app: :open_trip_planner_client,
     force_locale_download: Mix.env() == :prod,
     providers: [Cldr.Calendar, Cldr.DateTime, Cldr.List, Cldr.Number]
 end
