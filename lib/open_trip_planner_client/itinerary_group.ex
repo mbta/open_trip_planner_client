@@ -48,8 +48,9 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
 
     opts
     |> Keyword.get(:ideal_itineraries, [])
-    |> to_groups(opts |> Keyword.put(:available?, false))
+    |> to_groups(opts)
     |> select_unavailable_groups(groups)
+    |> mark_unavailable()
     |> Enum.take(Keyword.get(opts, :num_unavailable_groups, @num_unavailable_groups))
     |> Kernel.++(Enum.take(groups, Keyword.get(opts, :num_groups, @num_groups)))
   end
@@ -112,13 +113,20 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
     time_key = if(opts[:take_from_end], do: :end, else: :start)
 
     %__MODULE__{
-      available?: opts |> Keyword.get(:available?, true),
+      available?: true,
       identifier: identifier,
       itineraries: limited_itineraries,
       representative_index: representative_index,
       summary: summary,
       time_key: time_key
     }
+  end
+
+  defp mark_unavailable(groups) do
+    groups
+    |> Enum.map(fn group ->
+      %__MODULE__{group | available?: false}
+    end)
   end
 
   @doc """
