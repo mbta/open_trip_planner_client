@@ -71,6 +71,79 @@ defmodule OpenTripPlannerClient.ItineraryGroupTest do
       assert group2.time_key == :start
     end
 
+    test "includes unavailable trips" do
+      [ideal_cost, actual_cost] =
+        Faker.Util.sample_uniq(2, fn -> Faker.random_between(1000, 9999) end)
+        |> Enum.sort()
+
+      actual_itineraries = groupable_otp_itineraries(1, 3, generalized_cost: actual_cost)
+      ideal_itineraries = groupable_otp_itineraries(1, 3, generalized_cost: ideal_cost)
+
+      groups =
+        ItineraryGroup.groups_from_itineraries(actual_itineraries,
+          ideal_itineraries: ideal_itineraries
+        )
+
+      [%ItineraryGroup{} = unavailable_group, %ItineraryGroup{} = available_group] = groups
+
+      assert available_group.available?
+      refute unavailable_group.available?
+    end
+
+    test "does not count trips as unavailable if they are also part of the available itineraries" do
+      itineraries = groupable_otp_itineraries(1, 3)
+
+      groups =
+        ItineraryGroup.groups_from_itineraries(itineraries,
+          ideal_itineraries: itineraries
+        )
+
+      [%ItineraryGroup{} = group] = groups
+
+      assert group.available?
+    end
+
+    test "does not include unavailable trips with costs that are higher than the best collection of available trips" do
+      [actual_cost1, actual_cost2, ideal_cost] =
+        Faker.Util.sample_uniq(3, fn -> Faker.random_between(1000, 9999) end)
+        |> Enum.sort()
+
+      actual_itineraries1 = groupable_otp_itineraries(1, 3, generalized_cost: actual_cost1)
+      actual_itineraries2 = groupable_otp_itineraries(1, 3, generalized_cost: actual_cost2)
+      ideal_itineraries = groupable_otp_itineraries(1, 3, generalized_cost: ideal_cost)
+
+      groups =
+        (actual_itineraries1 ++ actual_itineraries2)
+        |> Enum.shuffle()
+        |> ItineraryGroup.groups_from_itineraries(ideal_itineraries: ideal_itineraries)
+
+      # Only two groups, because actual_itineraries 1 and 2 are returned, but not ideal_itineraries.
+      assert groups |> Enum.count() == 2
+
+      groups |> Enum.each(&assert &1.available?)
+    end
+
+    test "does not count trips as unavailable if they are bus-only" do
+      [ideal_cost, actual_cost] =
+        Faker.Util.sample_uniq(2, fn -> Faker.random_between(1000, 9999) end)
+        |> Enum.sort()
+
+      actual_itineraries = groupable_otp_itineraries(1, 3, generalized_cost: actual_cost)
+
+      ideal_itineraries =
+        groupable_otp_itineraries(1, 3, generalized_cost: ideal_cost, route_type: 3)
+
+      groups =
+        ItineraryGroup.groups_from_itineraries(actual_itineraries,
+          ideal_itineraries: ideal_itineraries
+        )
+
+      assert groups |> Enum.count() == 1
+      [%ItineraryGroup{} = available_group] = groups
+
+      assert available_group.available?
+    end
+
     test "generates a summary based on all input itineraries" do
       [a, b] = build_list(2, :place_with_stop)
       c = build(:place)

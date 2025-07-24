@@ -10,13 +10,17 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
   alias OpenTripPlannerClient.Schema.{Itinerary, Leg}
 
   @type t :: %__MODULE__{
+          available?: boolean(),
+          identifier: tuple(),
           itineraries: [Itinerary.t()],
-          summary: [Leg.leg_summary()],
           representative_index: non_neg_integer(),
+          summary: [Leg.leg_summary()],
           time_key: :start | :end
         }
 
   defstruct [
+    :available?,
+    :identifier,
     :itineraries,
     :summary,
     :representative_index,
@@ -25,6 +29,7 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
 
   @max_per_group 4
   @num_groups 5
+  @num_unavailable_groups 2
 
   @doc """
   From a large list of itineraries, collect them into #{@num_groups} groups of at most
@@ -39,11 +44,54 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
   """
   @spec groups_from_itineraries([Itinerary.t()], Keyword.t()) :: [%__MODULE__{}]
   def groups_from_itineraries(itineraries, opts \\ []) do
+    groups = itineraries |> to_groups(opts)
+
+    opts
+    |> Keyword.get(:ideal_itineraries, [])
+    |> to_groups(opts)
+    |> select_unavailable_groups(groups)
+    |> mark_unavailable()
+    |> Enum.take(Keyword.get(opts, :num_unavailable_groups, @num_unavailable_groups))
+    |> Kernel.++(Enum.take(groups, Keyword.get(opts, :num_groups, @num_groups)))
+  end
+
+  # groups generated from itineraries in the ideal GTFS feed are considered
+  # for display as 'unavailable' if they meet all the following conditions:
+  # - not solely bus legs (it's too tricky to select the correct groups)
+  # - generalized cost is better than all groups from the actual GTFS
+  # - summarized walk/transit legs isn't already present in the actual groups
+  defp select_unavailable_groups(ideal_groups, actual_groups) do
+    group_summaries = Enum.map(actual_groups, & &1.summary)
+
+    group_cost_threshold =
+      actual_groups
+      |> Stream.map(&generalized_cost/1)
+      |> Enum.min()
+
+    ideal_groups
+    |> Stream.reject(&all_mbta_bus_legs?/1)
+    |> Stream.reject(&(generalized_cost(&1) >= group_cost_threshold))
+    |> Stream.reject(&(&1.summary in group_summaries))
+  end
+
+  defp to_groups(itineraries, opts) do
     itineraries
     |> Enum.group_by(&Itinerary.group_identifier/1)
     |> Enum.map(&to_group(&1, opts))
     |> Enum.sort_by(&tag_and_cost_sorter/1)
-    |> Enum.take(Keyword.get(opts, :num_groups, @num_groups))
+  end
+
+  defp all_mbta_bus_legs?(group) do
+    group
+    |> representative_itinerary()
+    |> Map.get(:legs)
+    |> Itinerary.all_mbta_bus_legs?()
+  end
+
+  defp generalized_cost(group) do
+    group
+    |> representative_itinerary()
+    |> Map.get(:generalized_cost)
   end
 
   defp truncate_list(grouped_itineraries, opts) do
@@ -58,18 +106,27 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
     end
   end
 
-  defp to_group({_, all_itineraries}, opts) do
+  defp to_group({identifier, all_itineraries}, opts) do
     limited_itineraries = truncate_list(all_itineraries, opts)
     summary = summary(all_itineraries)
     representative_index = if(opts[:take_from_end], do: length(limited_itineraries) - 1, else: 0)
     time_key = if(opts[:take_from_end], do: :end, else: :start)
 
     %__MODULE__{
+      available?: true,
+      identifier: identifier,
       itineraries: limited_itineraries,
-      summary: summary,
       representative_index: representative_index,
+      summary: summary,
       time_key: time_key
     }
+  end
+
+  defp mark_unavailable(groups) do
+    groups
+    |> Enum.map(fn group ->
+      %__MODULE__{group | available?: false}
+    end)
   end
 
   @doc """
@@ -121,11 +178,17 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
     |> then(&%{routes: [], walk_minutes: &1})
   end
 
-  # Sorting first by tag priority, then by increasing generalized cost
+  # Sorting first by availability (unavailable trips first), then tag
+  # priority, then by increasing generalized cost
   @spec tag_and_cost_sorter(__MODULE__.t()) :: tuple()
   defp tag_and_cost_sorter(itinerary_group) do
     itinerary = representative_itinerary(itinerary_group)
-    {ItineraryTag.tag_order(itinerary[:tag]), itinerary[:generalized_cost]}
+
+    {
+      itinerary_group.available?,
+      ItineraryTag.tag_order(itinerary[:tag]),
+      itinerary[:generalized_cost]
+    }
   end
 
   @spec representative_itinerary(__MODULE__.t()) :: Itinerary.t()

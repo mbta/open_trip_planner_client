@@ -47,6 +47,7 @@ defmodule OpenTripPlannerClient.Util do
     for mod <- [
           OpenTripPlannerClient.Plan,
           OpenTripPlannerClient.PlanParams,
+          OpenTripPlannerClient.QueryResult,
           OpenTripPlannerClient.Schema.Agency,
           OpenTripPlannerClient.Schema.Geometry,
           OpenTripPlannerClient.Schema.Itinerary,
