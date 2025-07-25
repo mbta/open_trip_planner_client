@@ -61,7 +61,7 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
   # - generalized cost is better than all groups from the actual GTFS
   # - summarized walk/transit legs isn't already present in the actual groups
   defp select_unavailable_groups(ideal_groups, actual_groups) do
-    group_summaries = Enum.map(actual_groups, & &1.summary)
+    group_identifiers = Enum.map(actual_groups, & &1.identifier)
 
     group_cost_threshold =
       actual_groups
@@ -71,7 +71,7 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
     ideal_groups
     |> Stream.reject(&all_mbta_bus_legs?/1)
     |> Stream.reject(&(generalized_cost(&1) >= group_cost_threshold))
-    |> Stream.reject(&(&1.summary in group_summaries))
+    |> Stream.reject(&(&1.identifier in group_identifiers))
   end
 
   defp to_groups(itineraries, opts) do
