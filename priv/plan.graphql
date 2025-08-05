@@ -1,128 +1,133 @@
 query TripPlan(
-  $fromPlace: String!
-  $toPlace: String!
-  $date: String
-  $time: String
-  $arriveBy: Boolean
+  $origin: PlanLabeledLocationInput!
+  $destination: PlanLabeledLocationInput!
+  $dateTime: PlanDateTimeInput
   $wheelchair: Boolean
-  $transportModes: [TransportMode]
+  $transportModes: [PlanTransitModePreferenceInput!]
   $numItineraries: Int
 ) {
-  actualPlan: plan(
-    fromPlace: $fromPlace
-    toPlace: $toPlace
-    date: $date
-    time: $time
-    arriveBy: $arriveBy
-    wheelchair: $wheelchair
-    transportModes: $transportModes
-
-    # A 2-hour search window accomodates infrequent routes
-    searchWindow: 7200
-
-    # Increased from 3 to offer more itineraries for potential post-processing
-    numItineraries: $numItineraries
-
-    # Increased from 2.0 to reduce number of itineraries with significant walking
-    walkReluctance: 5.0
-
-    # Theoretically can be configured in the future for visitors using translation?
+  actualPlan: planConnection(
+    origin: $origin,
+    destination: $destination,
+    dateTime: $dateTime,
+    preferences: {
+      accessibility: {
+        wheelchair: {
+          enabled: $wheelchair
+        }
+      },
+      street: {
+        walk: {
+          reluctance: 5.0
+        }
+      },
+      transit: {
+        filters: [
+          { exclude: [{ agencies: ["mbta-ma-us-initial:1"] }]}
+        ]
+      }
+    },
+    modes: {
+      transit: {
+        transit: $transportModes
+      }
+    },
+    searchWindow: "2h"
+    first: $numItineraries
     locale: "en"
-
-    # Prefer MBTA transit legs over Massport or others.
-    preferred: { agencies: "mbta-ma-us:1" }
-
-    # Ban the initial feed
-    banned: { agencies: "mbta-ma-us-initial:1" }
   ) { ...PlanInfo }
 
-  idealPlan: plan(
-    fromPlace: $fromPlace
-    toPlace: $toPlace
-    date: $date
-    time: $time
-    arriveBy: $arriveBy
-    wheelchair: $wheelchair
-    transportModes: $transportModes
-
-    # A 2-hour search window accomodates infrequent routes
-    searchWindow: 7200
-
-    # Increased from 3 to offer more itineraries for potential post-processing
-    numItineraries: $numItineraries
-
-    # Increased from 2.0 to reduce number of itineraries with significant walking
-    walkReluctance: 5.0
-
-    # Theoretically can be configured in the future for visitors using translation?
+  idealPlan: planConnection(
+    origin: $origin,
+    destination: $destination,
+    dateTime: $dateTime,
+    preferences: {
+      accessibility: {
+        wheelchair: {
+          enabled: $wheelchair
+        }
+      },
+      street: {
+        walk: {
+          reluctance: 5.0
+        }
+      },
+      transit: {
+        filters: [
+          { include: [{ agencies: ["mbta-ma-us-initial:1"] }]}
+        ]
+      }
+    },
+    modes: {
+      transit: {
+        transit: $transportModes
+      }
+    },
+    searchWindow: "2h"
+    first: $numItineraries
     locale: "en"
-
-    # Prefer MBTA transit legs over Massport or others.
-    preferred: { agencies: "mbta-ma-us-initial:1" }
-
-    # Ban the regular feed
-    banned: { agencies: "mbta-ma-us:1" }
   ) { ...PlanInfo }
 }
 
-fragment PlanInfo on Plan {
-  searchWindowUsed
-  date
+fragment PlanInfo on PlanConnection {
+  searchDateTime
   routingErrors {
     code
     description
   }
-  itineraries {
-    accessibilityScore
-    duration
-    end
-    generalizedCost
-    legs {
-      agency { name }
-      distance
+  itineraries: edges {
+    node {
+      accessibilityScore
       duration
-      end { ...TimeInfo }
-      from { ...PlaceInfo }
-      headsign
-      intermediateStops { 
-        gtfsId,
-        name
-      }
-      legGeometry { points }
-      mode
-      realTime
-      realtimeState
-      route { 
+      end
+      generalizedCost
+      legs {
         agency { name }
-        gtfsId
-        shortName
-        longName
-        type
-        color
-        textColor
-        desc
-        sortOrder
-        mode
-      }
-      start { ...TimeInfo }
-      steps {
         distance
-        streetName
-        absoluteDirection
-        relativeDirection
+        duration
+        end { ...TimeInfo }
+        from { ...PlaceInfo }
+        headsign
+        intermediateStops { 
+          gtfsId,
+          name
+        }
+        legGeometry { points }
+        mode
+        realTime
+        realtimeState
+        route { 
+          agency { name }
+          gtfsId
+          shortName
+          longName
+          type
+          color
+          textColor
+          desc
+          sortOrder
+          mode
+        }
+        start { ...TimeInfo }
+        steps {
+          distance
+          streetName
+          absoluteDirection
+          relativeDirection
+        }
+        to { ...PlaceInfo }
+        transitLeg
+        trip {
+          directionId
+          gtfsId
+          tripHeadsign
+          tripShortName
+        }
       }
-      to { ...PlaceInfo }
-      transitLeg
-      trip {
-        directionId
-        gtfsId
-        tripHeadsign
-        tripShortName
-      }
+      numberOfTransfers
+      start
+      walkDistance
     }
-    numberOfTransfers
-    start
-    walkDistance
   }
 }
 

@@ -3,9 +3,6 @@ defmodule OpenTripPlannerClient.PlanParamsTest do
 
   alias OpenTripPlannerClient.PlanParams
 
-  @date_regex ~r/^\d{4}-\d{2}-\d{2}$/
-  @time_regex ~r/^\d?\d:\d{2}(am|pm)$/
-
   setup do
     from = %{
       name: Faker.Address.street_name(),
@@ -26,33 +23,27 @@ defmodule OpenTripPlannerClient.PlanParamsTest do
 
   describe "new/2" do
     test "specifies from and to", %{from: from, to: to} do
-      assert %PlanParams{fromPlace: from_param, toPlace: to_param} = PlanParams.new(from, to)
+      assert %PlanParams{origin: from_param, destination: to_param} = PlanParams.new(from, to)
       assert from_param
       assert to_param
     end
 
     test "provides defaults", %{from: from, to: to} do
       assert %PlanParams{
-               date: date,
-               time: time,
-               arriveBy: false,
+               dateTime: datetime,
                numItineraries: 5,
                wheelchair: false
              } =
                PlanParams.new(from, to)
 
-      assert date
-      assert time
+      assert datetime
     end
 
-    test "sets custom datetime, formats them", %{from: from, to: to} do
-      assert %PlanParams{date: default_date, time: default_time} = PlanParams.new(from, to)
+    test "sets custom datetime", %{from: from, to: to} do
+      assert %PlanParams{dateTime: default_datetime} = PlanParams.new(from, to)
       datetime = Faker.DateTime.forward(1)
-      assert %PlanParams{date: date, time: time} = PlanParams.new(from, to, datetime: datetime)
-      assert date != default_date
-      assert time != default_time
-      assert date |> String.match?(@date_regex)
-      assert time |> String.match?(@time_regex)
+      assert %PlanParams{dateTime: custom_datetime} = PlanParams.new(from, to, datetime: datetime)
+      assert custom_datetime != default_datetime
     end
 
     test "sets custom numItineraries", %{from: from, to: to} do
@@ -62,11 +53,17 @@ defmodule OpenTripPlannerClient.PlanParamsTest do
                PlanParams.new(from, to, num_itineraries: number)
     end
 
-    test "sets custom arriveBy", %{from: from, to: to} do
-      arrive_by = Faker.Util.pick([true, false])
+    test "sets custom dateTime based on arriveBy", %{from: from, to: to} do
+      assert %PlanParams{dateTime: arrive_datetime} =
+               PlanParams.new(from, to, arrive_by: true)
 
-      assert %PlanParams{arriveBy: ^arrive_by} =
-               PlanParams.new(from, to, arrive_by: arrive_by)
+      assert %PlanParams{dateTime: depart_datetime} =
+               PlanParams.new(from, to, arrive_by: false)
+
+      assert {:ok, _, _} = DateTime.from_iso8601(arrive_datetime.latestArrival)
+      refute Map.has_key?(arrive_datetime, :earliestDeparture)
+      refute Map.has_key?(depart_datetime, :latestArrival)
+      assert {:ok, _, _} = DateTime.from_iso8601(depart_datetime.earliestDeparture)
     end
 
     test "sets custom wheelchair", %{from: from, to: to} do

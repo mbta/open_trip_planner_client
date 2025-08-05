@@ -16,32 +16,29 @@ defmodule OpenTripPlannerClient.Plan do
         map
         |> update_in([:routing_errors], &replace_nil_with_list/1)
         |> update_in([:itineraries], &replace_nil_with_list/1)
-        |> update_in([:date], fn
-          dt when is_integer(dt) ->
-            OpenTripPlannerClient.Util.to_local_time(dt)
+        |> update_in([:itineraries], fn edges -> Enum.map(edges, &unwrap_node/1) end)
 
-          dt ->
-            dt
-        end)
 
       {:ok, updated_map}
     end
 
     defp replace_nil_with_list(nil), do: []
     defp replace_nil_with_list(other), do: other
+
+    defp unwrap_node(%{node: node}), do: node
+    defp unwrap_node(other), do: other
   end
 
   @derive {Nestru.Decoder,
            hint: %{
-             date: DateTime,
              itineraries: [Itinerary],
-             routing_errors: [OpenTripPlannerClient.Plan.RoutingError]
+             routing_errors: [OpenTripPlannerClient.Plan.RoutingError],
+             search_date_time: DateTime
            }}
   schema do
-    field(:date, DateTime)
     field(:itineraries, [Itinerary.t()])
     field(:routing_errors, [RoutingError.t()])
-    field(:search_window_used, non_neg_integer())
+    field(:search_date_time, DateTime)
   end
 
   defmodule RoutingError do

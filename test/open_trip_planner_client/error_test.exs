@@ -61,17 +61,11 @@ defmodule OpenTripPlannerClient.ErrorTest do
     end
 
     test "detailed message for NO_TRANSIT_CONNECTION_IN_SEARCH_WINDOW" do
-      search_window_used = Faker.random_between(600, 7200)
-      date = Faker.DateTime.forward(2)
-
       plan =
         build(:plan, %{
-          date: Timex.to_unix(date) * 1000,
-          itineraries: [],
           routing_errors: [
             build(:routing_error, %{code: "NO_TRANSIT_CONNECTION_IN_SEARCH_WINDOW"})
-          ],
-          search_window_used: search_window_used
+          ]
         })
 
       assert [%Error{message: message}] = from_routing_errors(plan)
