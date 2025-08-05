@@ -18,7 +18,6 @@ defmodule OpenTripPlannerClient.Plan do
         |> update_in([:itineraries], &replace_nil_with_list/1)
         |> update_in([:itineraries], fn edges -> Enum.map(edges, &unwrap_node/1) end)
 
-
       {:ok, updated_map}
     end
 
