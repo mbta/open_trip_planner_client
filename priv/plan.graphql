@@ -3,7 +3,7 @@ query TripPlan(
   $destination: PlanLabeledLocationInput!
   $dateTime: PlanDateTimeInput
   $wheelchair: Boolean
-  $transportModes: [PlanTransitModePreferenceInput!]
+  $modes: PlanModesInput
   $numItineraries: Int
 ) {
   actualPlan: planConnection(
@@ -27,11 +27,7 @@ query TripPlan(
         ]
       }
     },
-    modes: {
-      transit: {
-        transit: $transportModes
-      }
-    },
+    modes: $modes,
     searchWindow: "2h"
     first: $numItineraries
     locale: "en"
@@ -58,11 +54,7 @@ query TripPlan(
         ]
       }
     },
-    modes: {
-      transit: {
-        transit: $transportModes
-      }
-    },
+    modes: $modes,
     searchWindow: "2h"
     first: $numItineraries
     locale: "en"

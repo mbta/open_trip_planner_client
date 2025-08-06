@@ -80,7 +80,9 @@ defmodule OpenTripPlannerClient.PlanParamsTest do
         Faker.random_between(1, 5)
         |> Faker.Util.sample_uniq(fn -> Faker.Util.pick(@non_subway_modes) end)
 
-      assert %PlanParams{transportModes: modes_param} = PlanParams.new(from, to, modes: modes)
+      assert %PlanParams{transportModes: %{transit: %{transit: modes_param}}} =
+               PlanParams.new(from, to, modes: modes)
+
       assert Enum.map(modes_param, &Map.get(&1, :mode)) == modes
     end
 
@@ -91,8 +93,15 @@ defmodule OpenTripPlannerClient.PlanParamsTest do
           |> Faker.Util.sample_uniq(fn -> Faker.Util.pick(@non_subway_modes) end)
       ]
 
-      assert %PlanParams{transportModes: modes_param} = PlanParams.new(from, to, modes: modes)
+      assert %PlanParams{transportModes: %{transit: %{transit: modes_param}}} =
+               PlanParams.new(from, to, modes: modes)
+
       assert Enum.map(modes_param, &Map.get(&1, :mode)) == [:TRAM | modes]
+    end
+
+    test "handles no transit modes", %{from: from, to: to} do
+      assert %PlanParams{transportModes: %{}} =
+               PlanParams.new(from, to, modes: [])
     end
   end
 end

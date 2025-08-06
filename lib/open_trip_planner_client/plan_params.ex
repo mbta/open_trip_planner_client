@@ -115,7 +115,7 @@ defmodule OpenTripPlannerClient.PlanParams do
           dateTime: datetime_map(),
           numItineraries: integer(),
           destination: place_location_input(),
-          transportModes: transport_modes(),
+          transportModes: map(),
           wheelchair: wheelchair()
         }
 
@@ -130,7 +130,7 @@ defmodule OpenTripPlannerClient.PlanParams do
   @spec new(place_map(), place_map(), opts()) :: t()
   def new(origin, destination, opts \\ []) do
     datetime = Keyword.get(opts, :datetime, OpenTripPlannerClient.Util.local_now())
-    modes = Keyword.get(opts, :modes, [:RAIL, :SUBWAY, :TRAM, :BUS, :FERRY])
+    modes = Keyword.get(opts, :modes, [])
 
     %__MODULE__{
       origin: to_location_param(origin),
@@ -142,7 +142,10 @@ defmodule OpenTripPlannerClient.PlanParams do
     }
   end
 
-  @spec to_modes_param([mode_t()]) :: transport_modes()
+  @spec to_modes_param([mode_t()]) :: map()
+  # Will default to all modes being usable
+  defp to_modes_param([]), do: %{}
+
   defp to_modes_param(modes) do
     modes
     |> then(fn modes ->
@@ -153,6 +156,13 @@ defmodule OpenTripPlannerClient.PlanParams do
       end
     end)
     |> Enum.map(&Map.new(mode: &1))
+    |> then(
+      &%{
+        transit: %{
+          transit: &1
+        }
+      }
+    )
   end
 
   @spec to_datetime_param(boolean(), DateTime.t()) :: map()
