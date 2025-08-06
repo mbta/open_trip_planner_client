@@ -143,8 +143,11 @@ defmodule OpenTripPlannerClient.PlanParams do
   end
 
   @spec to_modes_param([mode_t()]) :: map()
-  # Will default to all modes being usable
-  defp to_modes_param([]), do: %{}
+  # Our way of doing "walk only" -- no transit modes!
+  defp to_modes_param([]),
+    do: %{
+      directOnly: true
+    }
 
   defp to_modes_param(modes) do
     modes
