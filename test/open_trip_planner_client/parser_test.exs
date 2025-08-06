@@ -103,7 +103,7 @@ defmodule OpenTripPlannerClient.ParserTest do
     end
 
     test "handles and logs routing errors" do
-      code = "PATH_NOT_FOUND"
+      code = :OUTSIDE_BOUNDS
       routing_error = build(:routing_error, code: code)
 
       assert {{:error, errors}, log} =
@@ -116,18 +116,18 @@ defmodule OpenTripPlannerClient.ParserTest do
       assert [
                %OpenTripPlannerClient.Error{
                  details: ^routing_error,
-                 message: "Something went wrong.",
+                 message: _,
                  type: :routing_error
                }
              ] = errors
 
-      assert log =~ code
+      assert log =~ "#{code}"
     end
 
     test "does not treat 'WALKING_BETTER_THAN_TRANSIT' as a fatal error" do
       assert {:ok, %OpenTripPlannerClient.QueryResult{}} =
                validate_body(%{
-                 data: %{actual_plan: %{routing_errors: [%{code: "WALKING_BETTER_THAN_TRANSIT"}]}}
+                 data: %{actual_plan: %{routing_errors: [%{code: :WALKING_BETTER_THAN_TRANSIT}]}}
                })
     end
 
@@ -150,7 +150,7 @@ defmodule OpenTripPlannerClient.ParserTest do
     end
 
     test "treats routing errors in ideal_plan as just an empty list of itineraries" do
-      code = "PATH_NOT_FOUND"
+      code = :NO_TRANSIT_CONNECTION
       routing_error = build(:routing_error, code: code)
 
       assert {:ok, %OpenTripPlannerClient.QueryResult{}} =

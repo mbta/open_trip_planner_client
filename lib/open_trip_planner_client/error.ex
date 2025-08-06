@@ -39,7 +39,7 @@ defmodule OpenTripPlannerClient.Error do
   end
 
   defp code_to_message(code, description, _)
-       when code in ["LOCATION_NOT_FOUND", "NO_STOPS_IN_RANGE"] do
+       when code in [:LOCATION_NOT_FOUND, :NO_STOPS_IN_RANGE] do
     case description do
       "Origin" <> _ ->
         "Origin location is not close enough to any transit stops"
@@ -52,15 +52,15 @@ defmodule OpenTripPlannerClient.Error do
     end
   end
 
-  defp code_to_message("NO_TRANSIT_CONNECTION", _, _) do
+  defp code_to_message(:NO_TRANSIT_CONNECTION, _, _) do
     "No transit connection was found between the origin and destination on this date and time"
   end
 
-  defp code_to_message("OUTSIDE_BOUNDS", _, _) do
+  defp code_to_message(:OUTSIDE_BOUNDS, _, _) do
     "Origin or destination location is outside of our service area"
   end
 
-  defp code_to_message("NO_TRANSIT_CONNECTION_IN_SEARCH_WINDOW", _, %Plan{} = plan) do
+  defp code_to_message(:NO_TRANSIT_CONNECTION_IN_SEARCH_WINDOW, _, %Plan{} = plan) do
     with {:ok, datetime, _} <- DateTime.from_iso8601(plan.search_date_time),
          {:ok, formatted_datetime} <- humanized_full_date(datetime) do
       "No transit routes found within 2 hours of #{formatted_datetime}. Routes may be available at other times."

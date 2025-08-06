@@ -20,7 +20,7 @@ defmodule OpenTripPlannerClient.ErrorTest do
     test "shows a configured fallback message" do
       assert [%Error{message: custom_fallback}] =
                from_routing_errors(
-                 build(:plan, routing_errors: [build(:routing_error, %{code: "Fake"})])
+                 build(:plan, routing_errors: [build(:routing_error, %{code: :UNKNOWN})])
                )
 
       assert custom_fallback ==
@@ -31,9 +31,9 @@ defmodule OpenTripPlannerClient.ErrorTest do
       plan =
         build(:plan,
           routing_errors: [
-            %{code: "LOCATION_NOT_FOUND", description: "Origin location not found"},
-            %{code: "LOCATION_NOT_FOUND", description: "Destination location not found"},
-            %{code: "LOCATION_NOT_FOUND", description: "Some other message"}
+            %{code: :LOCATION_NOT_FOUND, description: "Origin location not found"},
+            %{code: :LOCATION_NOT_FOUND, description: "Destination location not found"},
+            %{code: :LOCATION_NOT_FOUND, description: "Some other message"}
           ]
         )
 
@@ -48,14 +48,14 @@ defmodule OpenTripPlannerClient.ErrorTest do
 
     test "message for NO_TRANSIT_CONNECTION" do
       assert [%Error{message: message}] =
-               from_routing_errors(plan_with_error_code("NO_TRANSIT_CONNECTION"))
+               from_routing_errors(plan_with_error_code(:NO_TRANSIT_CONNECTION))
 
       assert message =~ "No transit connection was found"
     end
 
     test "message for OUTSIDE_BOUNDS" do
       assert [%Error{message: message}] =
-               from_routing_errors(plan_with_error_code("OUTSIDE_BOUNDS"))
+               from_routing_errors(plan_with_error_code(:OUTSIDE_BOUNDS))
 
       assert message =~ "is outside of our service area"
     end
@@ -64,7 +64,7 @@ defmodule OpenTripPlannerClient.ErrorTest do
       plan =
         build(:plan, %{
           routing_errors: [
-            build(:routing_error, %{code: "NO_TRANSIT_CONNECTION_IN_SEARCH_WINDOW"})
+            build(:routing_error, %{code: :NO_TRANSIT_CONNECTION_IN_SEARCH_WINDOW})
           ]
         })
 

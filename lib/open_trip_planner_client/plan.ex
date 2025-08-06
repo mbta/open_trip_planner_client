@@ -84,12 +84,38 @@ defmodule OpenTripPlannerClient.Plan do
     removed. If you want to still show the transit results, you need to make
     walking less desirable by increasing the walk reluctance.
     """
-    @type code :: String.t()
+    @type code ::
+            :NO_TRANSIT_CONNECTION
+            | :NO_TRANSIT_CONNECTION_IN_SEARCH_WINDOW
+            | :OUTSIDE_SERVICE_PERIOD
+            | :OUTSIDE_BOUNDS
+            | :LOCATION_NOT_FOUND
+            | :NO_STOPS_IN_RANGE
+            | :WALKING_BETTER_THAN_TRANSIT
 
-    @derive Nestru.Decoder
+    defimpl Nestru.PreDecoder do
+      # credo:disable-for-next-line
+      def gather_fields_for_decoding(_, _, map) do
+        updated_map =
+          map
+          |> update_in([:code], &OpenTripPlannerClient.Util.to_uppercase_atom/1)
+
+        {:ok, updated_map}
+      end
+    end
+
+    @derive [
+      {Nestru.Decoder,
+       hint: %{
+         code: &__MODULE__.to_atom/1
+       }}
+    ]
     schema do
       field(:code, code(), @nonnull_field)
       field(:description, String.t(), @nonnull_field)
     end
+
+    @spec to_atom(any()) :: {:ok, any()}
+    def to_atom(term), do: {:ok, OpenTripPlannerClient.Util.to_uppercase_atom(term)}
   end
 end
