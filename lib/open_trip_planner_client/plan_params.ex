@@ -10,14 +10,8 @@ defmodule OpenTripPlannerClient.PlanParams do
     :origin,
     :destination,
     :dateTime,
+    :modes,
     numItineraries: 5,
-    transportModes: [
-      %{mode: :RAIL},
-      %{mode: :SUBWAY},
-      %{mode: :TRAM},
-      %{mode: :BUS},
-      %{mode: :FERRY}
-    ],
     wheelchair: false
   ]
 
@@ -115,7 +109,7 @@ defmodule OpenTripPlannerClient.PlanParams do
           dateTime: datetime_map(),
           numItineraries: integer(),
           destination: place_location_input(),
-          transportModes: map(),
+          modes: map(),
           wheelchair: wheelchair()
         }
 
@@ -137,7 +131,7 @@ defmodule OpenTripPlannerClient.PlanParams do
       destination: to_location_param(destination),
       dateTime: Keyword.get(opts, :arrive_by, false) |> to_datetime_param(datetime),
       numItineraries: Keyword.get(opts, :num_itineraries, 5),
-      transportModes: to_modes_param(modes),
+      modes: to_modes_param(modes),
       wheelchair: Keyword.get(opts, :wheelchair, false)
     }
   end

@@ -323,7 +323,7 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
         origin: build(:location_param),
         destination: build(:location_param),
         dateTime: build(:datetime_param),
-        transportModes: build(:modes_param),
+        modes: build(:modes_param),
         wheelchair: Faker.Util.pick([true, false])
       }
     end
@@ -336,7 +336,11 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
         end)
         |> Enum.map(&Map.new(mode: &1))
 
-      sequence(:modes, fn _ -> modes end)
+      %{
+        transit: %{
+          transit: modes
+        }
+      }
     end
 
     def datetime_param_factory(_) do
