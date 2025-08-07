@@ -6,7 +6,6 @@ defmodule OpenTripPlannerClient.Error do
   """
 
   alias OpenTripPlannerClient.Plan
-  alias Timex.{Duration, Format.Duration.Formatter}
 
   require Logger
 
@@ -62,9 +61,9 @@ defmodule OpenTripPlannerClient.Error do
   end
 
   defp code_to_message("NO_TRANSIT_CONNECTION_IN_SEARCH_WINDOW", _, %Plan{} = plan) do
-    with window when is_binary(window) <- humanized_search_window(plan.search_window_used),
-         {:ok, formatted_datetime} <- humanized_full_date(plan.date) do
-      "No transit routes found within #{window} of #{formatted_datetime}. Routes may be available at other times."
+    with {:ok, datetime, _} <- DateTime.from_iso8601(plan.search_date_time),
+         {:ok, formatted_datetime} <- humanized_full_date(datetime) do
+      "No transit routes found within 2 hours of #{formatted_datetime}. Routes may be available at other times."
     else
       _ ->
         fallback_error_message()
@@ -72,12 +71,6 @@ defmodule OpenTripPlannerClient.Error do
   end
 
   defp code_to_message(_, _, _), do: fallback_error_message()
-
-  defp humanized_search_window(number) do
-    number
-    |> Duration.from_seconds()
-    |> Formatter.format(:humanized)
-  end
 
   defp humanized_full_date(datetime) do
     datetime

@@ -24,7 +24,7 @@ defmodule OpenTripPlannerClient do
   Generate a trip plan with the given endpoints and options. Supports customizing which tags are applied to the results.
   """
   def plan(params, tags \\ nil) do
-    tags = if tags, do: tags, else: default_tags(params)
+    tags = if tags, do: tags, else: default_tags(params.dateTime)
 
     case send_request(params) do
       {:ok, %QueryResult{actual_plan: actual_plan, ideal_plan: ideal_plan}} ->
@@ -33,7 +33,7 @@ defmodule OpenTripPlannerClient do
         |> ItineraryTag.apply_tags(tags)
         |> ItineraryGroup.groups_from_itineraries(
           ideal_itineraries: ideal_plan.itineraries |> ItineraryTag.apply_tags(tags),
-          take_from_end: params.arriveBy
+          take_from_end: Map.has_key?(params.dateTime, :latestArrival)
         )
         |> then(&{:ok, &1})
 
@@ -45,7 +45,7 @@ defmodule OpenTripPlannerClient do
     end
   end
 
-  defp default_tags(%{arrive_by: true}), do: ItineraryTag.default_arriving()
+  defp default_tags(%{latestArrival: _}), do: ItineraryTag.default_arriving()
   defp default_tags(_), do: ItineraryTag.default_departing()
 
   @spec send_request(PlanParams.t()) :: {:ok, map()} | {:error, any()}

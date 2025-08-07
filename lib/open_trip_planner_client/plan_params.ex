@@ -1,87 +1,57 @@
 defmodule OpenTripPlannerClient.PlanParams do
   @moduledoc """
-  Data type describing params for the plan query.
-  https://docs.opentripplanner.org/api/dev-2.x/graphql-gtfs/queries/plan
+  Data type describing params for the planConnection query.
+  https://docs.opentripplanner.org/api/dev-2.x/graphql-gtfs/queries/planConnection
   """
-
-  @doc "Data type describing params for the plan query.
-  https://docs.opentripplanner.org/api/dev-2.x/graphql-gtfs/queries/plan"
+  @doc "Data type describing params for the planConnection query.
+  https://docs.opentripplanner.org/api/dev-2.x/graphql-gtfs/queries/planConnection"
   @derive Jason.Encoder
   defstruct [
-    :fromPlace,
-    :toPlace,
-    :date,
-    :time,
-    arriveBy: false,
+    :origin,
+    :destination,
+    :dateTime,
+    :modes,
     numItineraries: 5,
-    transportModes: [%{mode: :WALK}, %{mode: :TRANSIT}],
     wheelchair: false
   ]
 
   @typedoc """
-  Whether the itinerary should depart at the specified time (false), or arrive
-  to the destination at the specified time (true). Default value: false.
+  Datetime of departure or arrival in ISO8601Extended format. Default value: current datetime
   """
-  @type arrive_by :: boolean()
+  @type datetime :: String.t()
+  @type datetime_map :: %{earliestDeparture: datetime()} | %{latestArrival: datetime()}
 
   @typedoc """
-  Date of departure or arrival in format YYYY-MM-DD. Default value: current date
-  """
-  @type date :: String.t()
-
-  @typedoc """
-  The place where the itinerary begins or ends in format name::place, where
-  place is either a lat,lng pair (e.g. Pasila::60.199041,24.932928) or a stop id
-  (e.g. Pasila::HSL:1000202)
-
-  "New England Title Insurance Company, 151 Tremont St, Boston, MA, 02111,
-  USA::42.354452,-71.06338" "Newton Highlands::mbta-ma-us:place-nwtn"
-  """
-  @type place :: String.t()
-
-  @typedoc """
-  Time of departure or arrival in format hh:mm:ss. Default value: current time
-  """
-  @type time :: String.t()
-
-  @typedoc """
-  List of transportation modes that the user is willing to use. Default:
-  ["WALK","TRANSIT"]
+  List of transportation modes that the user is willing to use.
   """
   @type transport_modes :: nonempty_list(transport_mode())
   @typep transport_mode :: %{mode: mode_t()}
 
   @modes [
     :AIRPLANE,
-    :BICYCLE,
     :BUS,
     :CABLE_CAR,
-    :CAR,
     # Private car trips shared with others
     :CARPOOL,
     :COACH,
     :FERRY,
-    # Enables flexible transit for access and egress legs
-    :FLEX,
     :FUNICULAR,
     :GONDOLA,
     # Railway in which the track consists of a single rail or a beam.
     :MONORAIL,
+    # This includes long or short distance trains.
     :RAIL,
-    :SCOOTER,
+    # Subway or metro, depending on the local terminology.
     :SUBWAY,
     # A taxi, possibly operated by a public transport agency.
     :TAXI,
     :TRAM,
-    # A special transport mode, which includes all public transport.
-    :TRANSIT,
     # Electric buses that draw power from overhead wires using poles.
-    :TROLLEYBUS,
-    :WALK
+    :TROLLEYBUS
   ]
 
   @typedoc """
-  https://docs.opentripplanner.org/api/dev-2.x/graphql-gtfs/types/Mode
+  https://docs.opentripplanner.org/api/dev-2.x/graphql-gtfs/types/TransitMode
   """
   @type mode_t ::
           unquote(
@@ -98,7 +68,16 @@ defmodule OpenTripPlannerClient.PlanParams do
   @typedoc """
   Specifying an origin or destination for trip planning.
   """
-  @type place_map :: %{optional(any()) => any(), latitude: float(), longitude: float()}
+  @type place_map :: %{name: String.t(), latitude: float(), longitude: float()}
+  @type place_location_input :: %{
+          label: String.t(),
+          location: %{
+            coordinate: %{
+              latitude: float(),
+              longitude: float()
+            }
+          }
+        }
 
   @typedoc """
   Customization options for trip planning.
@@ -107,8 +86,7 @@ defmodule OpenTripPlannerClient.PlanParams do
     `false`, depart at a certain time. Defalts to false.
   * `:datetime` - The DateTime to depart from the origin or arrive at the
     destination. Defaults to now.
-  * `:modes` - The transit modes to be used in the plan. Defaults to
-    [:WALK, :TRANSIT]
+  * `:modes` - The transit modes to be used in the plan. Defaults to all modes.
   * `:num_itineraries` - The maximum number of itineraries to return. Defaults
     to 5.
   * `:wheelchair` - Whether to limit itineraries to those that are wheelchair 
@@ -127,13 +105,11 @@ defmodule OpenTripPlannerClient.PlanParams do
   Arguments for the OTP plan query.
   """
   @type t :: %__MODULE__{
-          arriveBy: arrive_by(),
-          fromPlace: place(),
-          date: date(),
+          origin: place_location_input(),
+          dateTime: datetime_map(),
           numItineraries: integer(),
-          time: time(),
-          toPlace: place(),
-          transportModes: transport_modes(),
+          destination: place_location_input(),
+          modes: map(),
           wheelchair: wheelchair()
         }
 
@@ -146,29 +122,27 @@ defmodule OpenTripPlannerClient.PlanParams do
   Defaults to 5 itineraries departing at the current time via walking or any mode of transit.
   """
   @spec new(place_map(), place_map(), opts()) :: t()
-  def new(from, to, opts \\ []) do
+  def new(origin, destination, opts \\ []) do
     datetime = Keyword.get(opts, :datetime, OpenTripPlannerClient.Util.local_now())
-    modes = Keyword.get(opts, :modes, [:WALK, :TRANSIT])
+    modes = Keyword.get(opts, :modes, [])
 
     %__MODULE__{
-      fromPlace: to_place_param(from),
-      toPlace: to_place_param(to),
-      arriveBy: Keyword.get(opts, :arrive_by, false),
-      date: to_date_param(datetime),
+      origin: to_location_param(origin),
+      destination: to_location_param(destination),
+      dateTime: Keyword.get(opts, :arrive_by, false) |> to_datetime_param(datetime),
       numItineraries: Keyword.get(opts, :num_itineraries, 5),
-      time: to_time_param(datetime),
-      transportModes: to_modes_param(modes),
+      modes: to_modes_param(modes),
       wheelchair: Keyword.get(opts, :wheelchair, false)
     }
   end
 
-  @spec to_place_param(place_map()) :: place()
-  defp to_place_param(%{latitude: latitude, longitude: longitude} = place)
-       when is_float(latitude) and is_float(longitude) do
-    "#{Map.get(place, :name, "")}::#{latitude},#{longitude}"
-  end
+  @spec to_modes_param([mode_t()]) :: map()
+  # Our way of doing "walk only" -- no transit modes!
+  defp to_modes_param([]),
+    do: %{
+      directOnly: true
+    }
 
-  @spec to_modes_param([mode_t()]) :: transport_modes()
   defp to_modes_param(modes) do
     modes
     |> then(fn modes ->
@@ -179,19 +153,26 @@ defmodule OpenTripPlannerClient.PlanParams do
       end
     end)
     |> Enum.map(&Map.new(mode: &1))
+    |> then(
+      &%{
+        transit: %{
+          transit: &1
+        }
+      }
+    )
   end
 
-  @spec to_date_param(DateTime.t()) :: date()
-  defp to_date_param(datetime) do
-    format_datetime(datetime, "{YYYY}-{0M}-{0D}")
+  @spec to_datetime_param(boolean(), DateTime.t()) :: map()
+  defp to_datetime_param(true, datetime) do
+    %{latestArrival: DateTime.to_iso8601(datetime)}
   end
 
-  @spec to_time_param(DateTime.t()) :: time()
-  defp to_time_param(datetime) do
-    format_datetime(datetime, "{h12}:{m}{am}")
+  defp to_datetime_param(false, datetime) do
+    %{earliestDeparture: DateTime.to_iso8601(datetime)}
   end
 
-  defp format_datetime(datetime, formatter) do
-    Timex.format!(datetime, formatter)
+  @spec to_location_param(place_map()) :: place_location_input()
+  defp to_location_param(%{name: name} = map) do
+    %{label: name, location: %{coordinate: Map.take(map, [:latitude, :longitude])}}
   end
 end

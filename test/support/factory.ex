@@ -28,10 +28,9 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
 
     def plan_factory do
       %Plan{
-        date: Faker.DateTime.forward(2),
         itineraries: __MODULE__.build_list(3, :itinerary),
         routing_errors: [],
-        search_window_used: 3600
+        search_date_time: Faker.DateTime.forward(2) |> DateTime.to_iso8601()
       }
     end
 
@@ -321,12 +320,10 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
 
     def plan_params_factory do
       %PlanParams{
-        fromPlace: build(:place_param),
-        toPlace: build(:place_param),
-        date: build(:date_param),
-        time: build(:time_param),
-        arriveBy: Faker.Util.pick([true, false]),
-        transportModes: build(:modes_param),
+        origin: build(:location_param),
+        destination: build(:location_param),
+        dateTime: build(:datetime_param),
+        modes: build(:modes_param),
         wheelchair: Faker.Util.pick([true, false])
       }
     end
@@ -339,48 +336,46 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
         end)
         |> Enum.map(&Map.new(mode: &1))
 
-      sequence(:modes, fn _ -> modes end)
+      %{
+        transit: %{
+          transit: modes
+        }
+      }
     end
 
-    def date_param_factory(_) do
-      formatted =
+    def datetime_param_factory(_) do
+      key = Faker.Util.pick([:earliestDeparture, :latestArrival])
+
+      date =
         Faker.DateTime.forward(2)
-        |> Timex.format!("{YYYY}-{0M}-{0D}")
+        |> DateTime.to_iso8601()
 
-      sequence(:date, fn _ -> formatted end)
+      Map.put(%{}, key, date)
     end
 
-    def time_param_factory(_) do
-      formatted =
-        Faker.DateTime.forward(2)
-        |> Timex.format!("{h12}:{m}{am}")
-
-      sequence(:time, fn _ -> formatted end)
-    end
-
-    def place_param_factory(_) do
-      [:lat_lon_place_param, :stop_place_param]
-      |> Faker.Util.pick()
-      |> build()
-    end
-
-    def lat_lon_place_param_factory(_) do
+    def location_param_factory(_) do
       lat = Faker.Address.latitude()
       lon = Faker.Address.longitude()
 
-      sequence(
-        :other_place,
-        fn _ -> "#{Faker.Address.street_name()}::#{lat},#{lon}" end
-      )
+      %{
+        label: Faker.Address.street_name(),
+        location: %{coordinate: %{latitude: lat, longitude: lon}}
+      }
     end
 
-    def stop_place_param_factory(_) do
-      sequence(
-        :stop_place,
-        fn _ ->
-          "#{Faker.Address.street_name()}::#{gtfs_prefix()}:#{Faker.Internet.slug()}"
-        end
-      )
+    def location_stop_param_factory(_) do
+      stop_id =
+        sequence(
+          :stop_place,
+          fn _ ->
+            "#{gtfs_prefix()}:#{Faker.Internet.slug()}"
+          end
+        )
+
+      %{
+        label: Faker.Address.street_name(),
+        location: %{stopLocation: stop_id}
+      }
     end
 
     def mbta_bus_leg_factory(attrs) do

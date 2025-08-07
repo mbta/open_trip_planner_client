@@ -48,20 +48,20 @@ defmodule OpenTripPlannerClient.Schema do
   defimpl Nestru.Encoder, for: DateTime do
     # credo:disable-for-next-line
     def gather_fields_from_struct(struct, _) do
-      {:ok, DateTime.to_string(struct)}
+      {:ok, DateTime.to_iso8601(struct)}
     end
   end
 
   defimpl Nestru.Decoder, for: DateTime do
     # credo:disable-for-next-line
     def decode_fields_hint(_, _, %DateTime{} = dt) do
-      {:ok, OpenTripPlannerClient.Util.to_local_time(dt)}
+      {:ok, dt}
     end
 
     # credo:disable-for-next-line
     def decode_fields_hint(_, _, value) do
-      case Timex.parse(value, "{ISO:Extended}") do
-        {:ok, dt} ->
+      case DateTime.from_iso8601(value) do
+        {:ok, dt, _} ->
           {:ok, OpenTripPlannerClient.Util.to_local_time(dt)}
 
         error ->
