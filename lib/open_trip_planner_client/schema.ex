@@ -75,7 +75,7 @@ defmodule OpenTripPlannerClient.Schema do
   """
   defmacro schema(do_block) do
     quote do
-      @derive Jason.Encoder
+      @derive [Nestru.Encoder, Nestru.Decoder]
       TypedStruct.typedstruct do
         unquote(do_block)
       end

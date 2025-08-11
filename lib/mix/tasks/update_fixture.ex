@@ -18,7 +18,7 @@ defmodule Mix.Tasks.UpdateFixture do
 
     {:ok, query_result} = OpenTripPlannerClient.send_request(params)
 
-    encoded = Jason.encode!(%{data: query_result}, pretty: true)
+    encoded = Jason.encode!(%{"data" => Nestru.encode!(query_result)}, pretty: true)
 
     File.write("test/fixture/alewife_to_franklin_park_zoo.json", encoded)
   end
