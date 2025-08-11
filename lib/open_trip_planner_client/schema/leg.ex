@@ -64,8 +64,8 @@ defmodule OpenTripPlannerClient.Schema.Leg do
     def gather_fields_for_decoding(_, _, map) do
       updated_map =
         map
-        |> update_in([:intermediate_stops], &replace_nil_with_list/1)
-        |> update_in([:steps], &replace_nil_with_list/1)
+        |> update_in(["intermediate_stops"], &replace_nil_with_list/1)
+        |> update_in(["steps"], &replace_nil_with_list/1)
 
       {:ok, updated_map}
     end

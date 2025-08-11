@@ -1,15 +1,6 @@
 defmodule OpenTripPlannerClient.Util do
   @moduledoc false
 
-  @spec to_snake_keys(binary() | atom()) :: atom()
-  def to_snake_keys(term) when is_binary(term) or is_atom(term) do
-    term
-    |> Macro.underscore()
-    |> to_existing_atom()
-  end
-
-  def to_snake_keys(other), do: other
-
   @spec to_uppercase_atom(binary()) :: atom()
   def to_uppercase_atom(term) when is_binary(term) do
     term

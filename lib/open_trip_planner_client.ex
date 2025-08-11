@@ -13,7 +13,7 @@ defmodule OpenTripPlannerClient do
   @behaviour OpenTripPlannerClient.Behaviour
 
   alias OpenTripPlannerClient.QueryResult
-  alias OpenTripPlannerClient.{ItineraryGroup, ItineraryTag, Parser, PlanParams, Util}
+  alias OpenTripPlannerClient.{ItineraryGroup, ItineraryTag, Parser, PlanParams}
 
   require Logger
 
@@ -67,7 +67,7 @@ defmodule OpenTripPlannerClient do
       base_url: plan_url(),
       cache: true,
       compressed: true,
-      decode_json: [keys: &Util.to_snake_keys/1]
+      decode_json: [keys: &Macro.underscore/1]
     ]
     |> Req.new()
     |> AbsintheClient.attach()

@@ -14,9 +14,9 @@ defmodule OpenTripPlannerClient.Plan do
     def gather_fields_for_decoding(_, _, map) do
       updated_map =
         map
-        |> update_in([:routing_errors], &replace_nil_with_list/1)
-        |> update_in([:itineraries], &replace_nil_with_list/1)
-        |> update_in([:itineraries], fn edges -> Enum.map(edges, &unwrap_node/1) end)
+        |> update_in(["routing_errors"], &replace_nil_with_list/1)
+        |> update_in(["itineraries"], &replace_nil_with_list/1)
+        |> update_in(["itineraries"], fn edges -> Enum.map(edges, &unwrap_node/1) end)
 
       {:ok, updated_map}
     end
@@ -24,7 +24,7 @@ defmodule OpenTripPlannerClient.Plan do
     defp replace_nil_with_list(nil), do: []
     defp replace_nil_with_list(other), do: other
 
-    defp unwrap_node(%{node: node}), do: node
+    defp unwrap_node(%{"node" => node}), do: node
     defp unwrap_node(other), do: other
   end
 

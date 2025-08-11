@@ -63,8 +63,8 @@ defmodule OpenTripPlannerClient.Schema.Step do
     def gather_fields_for_decoding(_, _, map) do
       updated_map =
         map
-        |> update_in([:absolute_direction], &OpenTripPlannerClient.Util.to_uppercase_atom/1)
-        |> update_in([:relative_direction], &OpenTripPlannerClient.Util.to_uppercase_atom/1)
+        |> update_in(["absolute_direction"], &OpenTripPlannerClient.Util.to_uppercase_atom/1)
+        |> update_in(["relative_direction"], &OpenTripPlannerClient.Util.to_uppercase_atom/1)
 
       {:ok, updated_map}
     end

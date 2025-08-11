@@ -29,12 +29,12 @@ defmodule OpenTripPlannerClient.Parser do
   """
   @spec validate_body(map()) :: {:ok, QueryResult.t()} | {:error, term()}
 
-  def validate_body(%{errors: [_ | _] = errors}) do
+  def validate_body(%{"errors" => [_ | _] = errors}) do
     {:error, Enum.map(errors, &Error.from_graphql_error/1)}
   end
 
-  def validate_body(body) do
-    with {:ok, query_result} <- Nestru.decode(body.data, QueryResult),
+  def validate_body(%{"data" => data}) do
+    with {:ok, query_result} <- Nestru.decode(data, QueryResult),
          {:ok, actual_plan} <- actual_plan_from_query_result(query_result),
          {:ok, simplified_plan} <- simplify_plan(actual_plan) do
       simplified_ideal_plan =

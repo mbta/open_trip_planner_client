@@ -33,7 +33,7 @@ defmodule OpenTripPlannerClient.Schema.Stop do
     def gather_fields_for_decoding(_, _, map) do
       updated_map =
         map
-        |> update_in([:wheelchair_boarding], &OpenTripPlannerClient.Util.to_uppercase_atom/1)
+        |> update_in(["wheelchair_boarding"], &OpenTripPlannerClient.Util.to_uppercase_atom/1)
 
       {:ok, updated_map}
     end
