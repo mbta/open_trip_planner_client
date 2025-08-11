@@ -82,7 +82,7 @@ Pages](http://mbta.github.io/open_trip_planner_client/).
 At minimum, origin and destination must specify any `:name` and either a valid `:stop_id` or `:latitude` and `:longitude`.
 
 ```elixir
-origin = %{name: "North Station", stop_id: "place-north"}
+origin = %{name: "North Station", latitude: 42.3664, longitude: -71.0620}
 destination = %{name: "Park Plaza", latitude: 42.348777, longitude: -71.066481}
 plan_params = OpenTripPlannerClient.PlanParams.new(origin, destination)
 {:ok, plan} = OpenTripPlannerClient.plan(plan_params)
