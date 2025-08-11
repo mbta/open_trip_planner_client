@@ -66,11 +66,11 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
     group_cost_threshold =
       actual_groups
       |> Stream.map(&generalized_cost/1)
-      |> Enum.min()
+      |> Enum.min(fn -> nil end)
 
     ideal_groups
     |> Stream.reject(&all_mbta_bus_legs?/1)
-    |> Stream.reject(&(generalized_cost(&1) >= group_cost_threshold))
+    |> Stream.reject(&if(group_cost_threshold, do: generalized_cost(&1) >= group_cost_threshold))
     |> Stream.reject(&(&1.identifier in group_identifiers))
   end
 
