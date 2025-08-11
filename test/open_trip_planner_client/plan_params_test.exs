@@ -100,8 +100,8 @@ defmodule OpenTripPlannerClient.PlanParamsTest do
     end
 
     test "handles no transit modes", %{from: from, to: to} do
-      assert %PlanParams{modes: %{directOnly: true}} =
-               PlanParams.new(from, to, modes: [])
+      assert %PlanParams{modes: %{transit: %{transit: _}}} = PlanParams.new(from, to)
+      assert %PlanParams{modes: %{directOnly: true}} = PlanParams.new(from, to, modes: [])
     end
   end
 end

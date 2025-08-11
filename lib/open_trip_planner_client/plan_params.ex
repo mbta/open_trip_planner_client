@@ -124,7 +124,7 @@ defmodule OpenTripPlannerClient.PlanParams do
   @spec new(place_map(), place_map(), opts()) :: t()
   def new(origin, destination, opts \\ []) do
     datetime = Keyword.get(opts, :datetime, OpenTripPlannerClient.Util.local_now())
-    modes = Keyword.get(opts, :modes, [])
+    modes = Keyword.get(opts, :modes, @modes)
 
     %__MODULE__{
       origin: to_location_param(origin),
