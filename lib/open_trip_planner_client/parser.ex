@@ -8,7 +8,7 @@ defmodule OpenTripPlannerClient.Parser do
   alias OpenTripPlannerClient.{Error, Plan}
   alias OpenTripPlannerClient.Schema.{Itinerary, Leg}
 
-  @walking_better_than_transit "WALKING_BETTER_THAN_TRANSIT"
+  @walking_better_than_transit :WALKING_BETTER_THAN_TRANSIT
 
   @doc """
   The errors entry in the response is a non-empty list of errors raised during

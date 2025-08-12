@@ -42,15 +42,21 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
       %{
         code:
           Faker.Util.pick([
-            "NO_TRANSIT_CONNECTION",
-            "NO_TRANSIT_CONNECTION_IN_SEARCH_WINDOW",
-            "OUTSIDE_SERVICE_PERIOD",
-            "OUTSIDE_BOUNDS",
-            "LOCATION_NOT_FOUND",
-            "NO_STOPS_IN_RANGE",
-            "WALKING_BETTER_THAN_TRANSIT"
+            :NO_TRANSIT_CONNECTION,
+            :NO_TRANSIT_CONNECTION_IN_SEARCH_WINDOW,
+            :OUTSIDE_SERVICE_PERIOD,
+            :OUTSIDE_BOUNDS,
+            :LOCATION_NOT_FOUND,
+            :NO_STOPS_IN_RANGE,
+            :WALKING_BETTER_THAN_TRANSIT
           ]),
-        description: Faker.Lorem.sentence(3)
+        description: Faker.Lorem.sentence(3),
+        input_field:
+          Faker.Util.pick([
+            :DATE_TIME,
+            :FROM,
+            :TO
+          ])
       }
     end
 

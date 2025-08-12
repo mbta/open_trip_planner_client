@@ -37,6 +37,7 @@ defmodule OpenTripPlannerClient.Util do
   def to_existing_atom(string) do
     for mod <- [
           OpenTripPlannerClient.Plan,
+          OpenTripPlannerClient.Plan.RoutingError,
           OpenTripPlannerClient.PlanParams,
           OpenTripPlannerClient.QueryResult,
           OpenTripPlannerClient.Schema.Agency,
