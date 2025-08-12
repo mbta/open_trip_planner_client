@@ -46,8 +46,6 @@ defmodule OpenTripPlannerClient.Parser do
        query_result
        |> put_in([:actual_plan], simplified_plan)
        |> put_in([:ideal_plan], simplified_ideal_plan)}
-    else
-      error -> error
     end
   end
 
