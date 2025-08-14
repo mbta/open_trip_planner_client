@@ -11,7 +11,6 @@ defmodule OpenTripPlannerClient.Schema.Geometry do
   """
   @type polyline :: String.t()
 
-  @derive Nestru.Decoder
   schema do
     @typedoc """
     * length - The number of points in the string

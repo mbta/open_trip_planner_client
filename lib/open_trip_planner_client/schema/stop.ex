@@ -8,7 +8,7 @@ defmodule OpenTripPlannerClient.Schema.Stop do
   use OpenTripPlannerClient.Schema
 
   alias OpenTripPlannerClient.PlanParams
-  alias OpenTripPlannerClient.Schema.ParentStop
+  alias OpenTripPlannerClient.Schema.{ParentStop, Stop}
 
   @typedoc "Transport mode (e.g. BUS) used by routes which pass through this stop"
   @type vehicle_mode :: PlanParams.mode_t()
@@ -28,12 +28,12 @@ defmodule OpenTripPlannerClient.Schema.Stop do
   @typedoc "ID of the zone where this stop is located"
   @type zone_id :: String.t()
 
-  defimpl Nestru.PreDecoder do
+  defimpl Nestru.PreDecoder, for: Stop do
     # credo:disable-for-next-line
     def gather_fields_for_decoding(_, _, map) do
       updated_map =
         map
-        |> update_in([:wheelchair_boarding], &OpenTripPlannerClient.Util.to_uppercase_atom/1)
+        |> update_in(["wheelchair_boarding"], &Stop.to_uppercase_atom/1)
 
       {:ok, updated_map}
     end
@@ -58,7 +58,7 @@ defmodule OpenTripPlannerClient.Schema.Stop do
   def wheelchair_boarding, do: @wheelchair_boarding
 
   @spec to_atom(any()) :: {:ok, any()}
-  def to_atom(term), do: {:ok, OpenTripPlannerClient.Util.to_uppercase_atom(term)}
+  def to_atom(term), do: {:ok, to_uppercase_atom(term)}
 end
 
 defmodule OpenTripPlannerClient.Schema.ParentStop do

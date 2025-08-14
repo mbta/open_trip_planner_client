@@ -12,12 +12,9 @@ defmodule OpenTripPlannerClient do
   """
   @behaviour OpenTripPlannerClient.Behaviour
 
-  alias OpenTripPlannerClient.QueryResult
-  alias OpenTripPlannerClient.{ItineraryGroup, ItineraryTag, Parser, PlanParams, Util}
+  import OpenTripPlannerClient.Request, only: [plan_connection: 1]
 
-  require Logger
-
-  @plan_query File.read!("priv/plan.graphql")
+  alias OpenTripPlannerClient.{ItineraryGroup, ItineraryTag, Parser, QueryResult}
 
   @impl OpenTripPlannerClient.Behaviour
   @doc """
@@ -26,74 +23,30 @@ defmodule OpenTripPlannerClient do
   def plan(params, tags \\ nil) do
     tags = if tags, do: tags, else: default_tags(params.dateTime)
 
-    case send_request(params) do
-      {:ok, %QueryResult{actual_plan: actual_plan, ideal_plan: ideal_plan}} ->
-        actual_plan.itineraries
-        |> Enum.map(&Map.put_new(&1, :tag, nil))
-        |> ItineraryTag.apply_tags(tags)
-        |> ItineraryGroup.groups_from_itineraries(
-          ideal_itineraries: ideal_plan.itineraries |> ItineraryTag.apply_tags(tags),
-          take_from_end: Map.has_key?(params.dateTime, :latestArrival)
-        )
-        |> then(&{:ok, &1})
-
-      error ->
-        error
-        |> inspect()
-
-        error
+    with {:ok, %Req.Response{status: 200, body: body}} <- plan_connection(params),
+         {:ok, %QueryResult{actual_plan: actual_plan, ideal_plan: ideal_plan}} <-
+           Parser.validate_body(body) do
+      actual_plan.itineraries
+      |> Enum.map(&Map.put_new(&1, :tag, nil))
+      |> ItineraryTag.apply_tags(tags)
+      |> ItineraryGroup.groups_from_itineraries(
+        ideal_itineraries: ideal_plan.itineraries |> ItineraryTag.apply_tags(tags),
+        take_from_end: Map.has_key?(params.dateTime, :latestArrival)
+      )
+      |> then(&{:ok, &1})
     end
   end
 
   defp default_tags(%{latestArrival: _}), do: ItineraryTag.default_arriving()
   defp default_tags(_), do: ItineraryTag.default_departing()
 
-  @spec send_request(PlanParams.t()) :: {:ok, map()} | {:error, any()}
-  def send_request(params) do
-    with {:ok, %Req.Response{status: 200, body: body}} <- log_response(params),
-         {:ok, query_result} <- Parser.validate_body(body) do
-      {:ok, query_result}
-    else
-      {:error, _} = error ->
-        error
+  defmodule GraphQLError do
+    defexception [:message]
 
-      other_error ->
-        {:error, other_error}
+    @impl true
+    def exception(error) do
+      {message, metadata} = Map.pop(error, "message", "")
+      %__MODULE__{message: "#{message} Details: #{inspect(metadata)}"}
     end
-  end
-
-  defp do_request(%PlanParams{} = params) do
-    [
-      base_url: plan_url(),
-      cache: true,
-      compressed: true,
-      decode_json: [keys: &Util.to_snake_keys/1]
-    ]
-    |> Req.new()
-    |> AbsintheClient.attach()
-    |> Req.post(graphql: {@plan_query, params})
-  end
-
-  defp plan_url do
-    Application.fetch_env!(:open_trip_planner_client, :otp_url) <> "/otp/routers/default/index/"
-  end
-
-  defp log_response(params) do
-    {duration, response} = :timer.tc(&do_request/1, [params])
-
-    meta = [
-      params: inspect(params),
-      duration: duration / :timer.seconds(1)
-    ]
-
-    case response do
-      {:ok, %{status: code}} ->
-        Logger.info(%{status: code}, meta)
-
-      {:error, error} ->
-        Logger.error(%{status: "error", error: inspect(error)}, meta)
-    end
-
-    response
   end
 end

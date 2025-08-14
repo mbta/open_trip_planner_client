@@ -9,10 +9,12 @@ defmodule OpenTripPlannerClient.HttpTest do
   """
   use ExUnit.Case, async: false
 
+  import ExUnit.CaptureLog
   import OpenTripPlannerClient
   import OpenTripPlannerClient.Test.Support.Factory
   import Plug.Conn, only: [send_resp: 3]
 
+  alias Faker.Internet.StatusCode
   alias OpenTripPlannerClient.{ItineraryGroup, ItineraryTag, Plan}
 
   setup context do
@@ -91,18 +93,21 @@ defmodule OpenTripPlannerClient.HttpTest do
   describe "error handling/logging" do
     @tag :capture_log
     test "HTTP errors are converted to error tuples", %{bypass: bypass} do
+      error_response_code =
+        [StatusCode.client_error(), StatusCode.server_error()]
+        |> Faker.Util.pick()
+
       Bypass.expect(bypass, fn conn ->
-        send_resp(conn, 500, "{}")
+        send_resp(conn, error_response_code, "{}")
       end)
 
-      assert {:error, _} = plan(build(:plan_params))
+      assert {{:error, _}, log} = with_log(fn -> plan(build(:plan_params)) end)
+      assert log =~ "#{error_response_code}"
     end
 
-    @tag :capture_log
     test "connection errors are converted to error tuples", %{bypass: bypass} do
       Bypass.down(bypass)
-
-      assert {:error, _} = plan(build(:plan_params))
+      assert {:error, %Req.TransportError{reason: :econnrefused}} = plan(build(:plan_params))
     end
   end
 end

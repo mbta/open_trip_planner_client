@@ -3,7 +3,7 @@ defmodule Mix.Tasks.UpdateFixture do
   @moduledoc "Run: `mix update_fixture` to request new data."
   use Mix.Task
 
-  alias OpenTripPlannerClient.PlanParams
+  alias OpenTripPlannerClient.{Parser, PlanParams, Request}
 
   @spec run(command_line_args :: [binary]) :: any()
   def run(_) do
@@ -16,9 +16,10 @@ defmodule Mix.Tasks.UpdateFixture do
         longitude: -71.090434
       })
 
-    {:ok, query_result} = OpenTripPlannerClient.send_request(params)
+    {:ok, %{body: body}} = Request.plan_connection(params)
+    {:ok, query_result} = Parser.validate_body(body)
 
-    encoded = Jason.encode!(%{data: query_result}, pretty: true)
+    encoded = Jason.encode!(%{"data" => Nestru.encode!(query_result)}, pretty: true)
 
     File.write("test/fixture/alewife_to_franklin_park_zoo.json", encoded)
   end

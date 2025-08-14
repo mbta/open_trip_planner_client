@@ -7,7 +7,6 @@ defmodule OpenTripPlannerClient.Schema.Agency do
 
   use OpenTripPlannerClient.Schema
 
-  @derive Nestru.Decoder
   schema do
     field(:name, String.t())
   end

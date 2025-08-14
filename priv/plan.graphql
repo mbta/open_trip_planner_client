@@ -66,6 +66,7 @@ fragment PlanInfo on PlanConnection {
   routingErrors {
     code
     description
+    inputField
   }
   itineraries: edges {
     node {
