@@ -42,6 +42,15 @@ defmodule OpenTripPlannerClient.Schema do
       use TypedStruct
 
       import OpenTripPlannerClient.Schema, only: [schema: 1]
+
+      @spec to_uppercase_atom(binary()) :: atom()
+      def to_uppercase_atom(term) when is_binary(term) do
+        term
+        |> String.upcase()
+        |> String.to_existing_atom()
+      end
+
+      def to_uppercase_atom(other), do: other
     end
   end
 

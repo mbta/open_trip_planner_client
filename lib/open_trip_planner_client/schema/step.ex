@@ -7,6 +7,8 @@ defmodule OpenTripPlannerClient.Schema.Step do
 
   use OpenTripPlannerClient.Schema
 
+  alias OpenTripPlannerClient.Schema.Step
+
   @absolute_direction [
     :NORTH,
     :NORTHEAST,
@@ -58,13 +60,13 @@ defmodule OpenTripPlannerClient.Schema.Step do
             |> Code.string_to_quoted!()
           )
 
-  defimpl Nestru.PreDecoder do
+  defimpl Nestru.PreDecoder, for: Step do
     # credo:disable-for-next-line
     def gather_fields_for_decoding(_, _, map) do
       updated_map =
         map
-        |> update_in(["absolute_direction"], &OpenTripPlannerClient.Util.to_uppercase_atom/1)
-        |> update_in(["relative_direction"], &OpenTripPlannerClient.Util.to_uppercase_atom/1)
+        |> update_in(["absolute_direction"], &Step.to_uppercase_atom/1)
+        |> update_in(["relative_direction"], &Step.to_uppercase_atom/1)
 
       {:ok, updated_map}
     end
@@ -91,7 +93,7 @@ defmodule OpenTripPlannerClient.Schema.Step do
   def relative_direction, do: @relative_direction
 
   @spec to_atom(any()) :: {:ok, any()}
-  def to_atom(term), do: {:ok, OpenTripPlannerClient.Util.to_uppercase_atom(term)}
+  def to_atom(term), do: {:ok, to_uppercase_atom(term)}
 
   @doc """
   Generate a friendly description of this walking step.

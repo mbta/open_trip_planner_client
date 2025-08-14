@@ -114,7 +114,7 @@ defmodule OpenTripPlannerClient.Schema.Leg do
 
   @spec to_atom(any()) :: {:ok, any()}
   def to_atom(string) when is_binary(string),
-    do: {:ok, OpenTripPlannerClient.Util.to_existing_atom(string)}
+    do: {:ok, to_uppercase_atom(string)}
 
   def to_atom(other), do: {:ok, other}
 

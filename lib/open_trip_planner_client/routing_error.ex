@@ -5,6 +5,8 @@ defmodule OpenTripPlannerClient.Plan.RoutingError do
 
   use OpenTripPlannerClient.Schema
 
+  alias OpenTripPlannerClient.Plan.RoutingError
+
   @routing_error_codes [
     :NO_TRANSIT_CONNECTION,
     :NO_TRANSIT_CONNECTION_IN_SEARCH_WINDOW,
@@ -59,13 +61,22 @@ defmodule OpenTripPlannerClient.Plan.RoutingError do
             |> Code.string_to_quoted!()
           )
 
-  defimpl Nestru.PreDecoder do
+  @input_field_codes [:DATE_TIME, :FROM, :TO]
+
+  @type input_field ::
+          unquote(
+            @input_field_codes
+            |> Enum.map_join(" | ", &inspect/1)
+            |> Code.string_to_quoted!()
+          )
+
+  defimpl Nestru.PreDecoder, for: RoutingError do
     # credo:disable-for-next-line
     def gather_fields_for_decoding(_, _, map) do
       updated_map =
         map
-        |> update_in(["code"], &OpenTripPlannerClient.Util.to_uppercase_atom/1)
-        |> update_in(["input_field"], &OpenTripPlannerClient.Util.to_uppercase_atom/1)
+        |> update_in(["code"], &RoutingError.to_uppercase_atom/1)
+        |> update_in(["input_field"], &RoutingError.to_uppercase_atom/1)
 
       {:ok, updated_map}
     end
@@ -81,9 +92,9 @@ defmodule OpenTripPlannerClient.Plan.RoutingError do
   schema do
     field(:code, code(), @nonnull_field)
     field(:description, String.t(), @nonnull_field)
-    field(:input_field, :DATE_TIME | :FROM | :TO)
+    field(:input_field, input_field())
   end
 
   @spec to_atom(any()) :: {:ok, any()}
-  def to_atom(term), do: {:ok, OpenTripPlannerClient.Util.to_uppercase_atom(term)}
+  def to_atom(term), do: {:ok, to_uppercase_atom(term)}
 end
