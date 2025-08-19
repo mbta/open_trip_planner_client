@@ -4,11 +4,10 @@ defmodule OpenTripPlannerClient.Parser do
   errors and trip planner errors into standard formats for logging and testing.
   """
 
-  alias OpenTripPlannerClient.QueryResult
-  alias OpenTripPlannerClient.{Error, Plan}
+  alias OpenTripPlannerClient.{GraphQLError, Plan, QueryResult}
   alias OpenTripPlannerClient.Schema.{Itinerary, Leg}
 
-  @walking_better_than_transit "WALKING_BETTER_THAN_TRANSIT"
+  @walking_better_than_transit :WALKING_BETTER_THAN_TRANSIT
 
   @doc """
   The errors entry in the response is a non-empty list of errors raised during
@@ -29,12 +28,12 @@ defmodule OpenTripPlannerClient.Parser do
   """
   @spec validate_body(map()) :: {:ok, QueryResult.t()} | {:error, term()}
 
-  def validate_body(%{errors: [_ | _] = errors}) do
-    {:error, Enum.map(errors, &Error.from_graphql_error/1)}
+  def validate_body(%{"errors" => [graphql_error | _]}) do
+    raise GraphQLError, graphql_error
   end
 
-  def validate_body(body) do
-    with {:ok, query_result} <- Nestru.decode(body.data, QueryResult),
+  def validate_body(%{"data" => data}) do
+    with {:ok, query_result} <- Nestru.decode(data, QueryResult),
          {:ok, actual_plan} <- actual_plan_from_query_result(query_result),
          {:ok, simplified_plan} <- simplify_plan(actual_plan) do
       simplified_ideal_plan =
@@ -46,19 +45,21 @@ defmodule OpenTripPlannerClient.Parser do
        query_result
        |> put_in([:actual_plan], simplified_plan)
        |> put_in([:ideal_plan], simplified_ideal_plan)}
-    else
-      error -> error
     end
   end
 
-  @spec plan_if_ok({:ok, Plan.t()} | {:error, Error.t()}) :: Plan.t()
+  def validate_body(_) do
+    {:error, :no_plan}
+  end
+
+  @spec plan_if_ok({:ok, Plan.t()} | {:error, Plan.t()}) :: Plan.t()
   defp plan_if_ok({:ok, plan}), do: plan
   defp plan_if_ok(_), do: %Plan{routing_errors: [], itineraries: []}
 
   defp actual_plan_from_query_result(%QueryResult{actual_plan: nil}), do: {:error, :no_plan}
   defp actual_plan_from_query_result(%QueryResult{actual_plan: plan}), do: {:ok, plan}
 
-  @spec simplify_plan(Plan.t() | nil) :: {:ok, Plan.t()} | {:error, Error.t()}
+  @spec simplify_plan(Plan.t() | nil) :: {:ok, Plan.t()} | {:error, Plan.t()}
   defp simplify_plan(nil) do
     {:ok, %Plan{routing_errors: [], itineraries: []}}
   end
@@ -70,9 +71,10 @@ defmodule OpenTripPlannerClient.Parser do
     |> validate_no_routing_errors()
   end
 
-  @spec validate_no_routing_errors(Plan.t()) :: {:ok, Plan.t()} | {:error, Error.t()}
+  @spec validate_no_routing_errors(Plan.t()) ::
+          {:ok, Plan.t()} | {:error, Plan.t()}
   defp validate_no_routing_errors(%Plan{routing_errors: []} = plan), do: {:ok, plan}
-  defp validate_no_routing_errors(%Plan{} = plan), do: {:error, Error.from_routing_errors(plan)}
+  defp validate_no_routing_errors(plan), do: {:error, plan}
 
   defp drop_nonfatal_errors(plan) do
     plan.routing_errors

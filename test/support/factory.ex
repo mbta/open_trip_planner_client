@@ -9,7 +9,7 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
 
     import Faker.Random.Elixir, only: [random_uniform: 0]
 
-    alias OpenTripPlannerClient.{ItineraryGroup, Plan, PlanParams}
+    alias OpenTripPlannerClient.{ItineraryGroup, Plan, PlanParams, QueryResult}
 
     alias OpenTripPlannerClient.Schema.{
       Agency,
@@ -26,11 +26,28 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
       Trip
     }
 
+    def query_result_factory do
+      %QueryResult{
+        actual_plan: build(:plan),
+        ideal_plan: build(:plan)
+      }
+    end
+
     def plan_factory do
       %Plan{
-        itineraries: __MODULE__.build_list(3, :itinerary),
+        itineraries: build_list(3, :itinerary),
         routing_errors: [],
         search_date_time: Faker.DateTime.forward(2) |> DateTime.to_iso8601()
+      }
+    end
+
+    def graphql_error_factory do
+      %{
+        "message" => Faker.Lorem.sentence(2),
+        "locations" => [%{"line" => 1, "column" => 10}],
+        "extensions" => %{
+          "classification" => "ValidationError"
+        }
       }
     end
 
@@ -42,15 +59,21 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
       %{
         code:
           Faker.Util.pick([
-            "NO_TRANSIT_CONNECTION",
-            "NO_TRANSIT_CONNECTION_IN_SEARCH_WINDOW",
-            "OUTSIDE_SERVICE_PERIOD",
-            "OUTSIDE_BOUNDS",
-            "LOCATION_NOT_FOUND",
-            "NO_STOPS_IN_RANGE",
-            "WALKING_BETTER_THAN_TRANSIT"
+            :NO_TRANSIT_CONNECTION,
+            :NO_TRANSIT_CONNECTION_IN_SEARCH_WINDOW,
+            :OUTSIDE_SERVICE_PERIOD,
+            :OUTSIDE_BOUNDS,
+            :LOCATION_NOT_FOUND,
+            :NO_STOPS_IN_RANGE,
+            :WALKING_BETTER_THAN_TRANSIT
           ]),
-        description: Faker.Lorem.sentence(3)
+        description: Faker.Lorem.sentence(3),
+        input_field:
+          Faker.Util.pick([
+            :DATE_TIME,
+            :FROM,
+            :TO
+          ])
       }
     end
 
@@ -168,14 +191,14 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
         duration: duration,
         end: end_time,
         from: build(:place),
-        intermediate_stops: nil,
+        intermediate_stops: [],
         leg_geometry: build(:geometry),
         mode: nil,
         real_time: false,
         realtime_state: nil,
         route: nil,
         start: start_time,
-        steps: nil,
+        steps: [],
         transit_leg: nil,
         trip: nil,
         to: build(:place)
