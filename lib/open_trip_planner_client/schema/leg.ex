@@ -96,6 +96,7 @@ defmodule OpenTripPlannerClient.Schema.Leg do
     field(:end, LegTime.t(), @nonnull_field)
     field(:from, Place.t(), @nonnull_field)
     field(:headsign, String.t())
+    field(:interline_with_previous_leg, boolean())
     field(:intermediate_stops, [IntermediateStop.t()])
     field(:leg_geometry, Geometry.t())
     field(:mode, PlanParams.mode_t())
@@ -174,7 +175,7 @@ defmodule OpenTripPlannerClient.Schema.Leg do
   defp mbta_id(_), do: nil
 
   @doc """
-  A concise desciption of a leg. Transit legs are described in terms of 
+  A concise desciption of a leg. Transit legs are described in terms of
   routes, and walking legs in terms of duration in minutes.
   """
   @spec summary(__MODULE__.t()) :: leg_summary()

@@ -81,6 +81,7 @@ fragment PlanInfo on PlanConnection {
         end { ...TimeInfo }
         from { ...PlaceInfo }
         headsign
+        interlineWithPreviousLeg
         intermediateStops { 
           gtfsId,
           name
