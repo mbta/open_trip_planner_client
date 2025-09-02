@@ -85,7 +85,7 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
 
     def geometry_factory do
       %Geometry{
-        points: Faker.Lorem.characters(12),
+        points: Faker.String.base64(64),
         length: nil
       }
     end
@@ -191,6 +191,7 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
         duration: duration,
         end: end_time,
         from: build(:place),
+        interline_with_previous_leg: false,
         intermediate_stops: [],
         leg_geometry: build(:geometry),
         mode: nil,
@@ -219,7 +220,9 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
           build(:place, %{
             stop: build(:stop, %{gtfs_id: gtfs_prefix(agency.name) <> Faker.Internet.slug()})
           }),
+        interline_with_previous_leg: false,
         intermediate_stops: build_list(3, :intermediate_stop),
+        leg_geometry: build(:geometry),
         mode: Faker.Util.pick([:TRANSIT, :RAIL, :SUBWAY, :BUS]),
         real_time: true,
         realtime_state: Faker.Util.pick(Leg.realtime_state()),
