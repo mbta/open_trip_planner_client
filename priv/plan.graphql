@@ -30,7 +30,6 @@ query TripPlan(
     modes: $modes,
     searchWindow: "2h"
     first: $numItineraries
-    locale: "en"
   ) { ...PlanInfo }
 
   idealPlan: planConnection(
@@ -57,7 +56,6 @@ query TripPlan(
     modes: $modes,
     searchWindow: "2h"
     first: $numItineraries
-    locale: "en"
   ) { ...PlanInfo }
 }
 
