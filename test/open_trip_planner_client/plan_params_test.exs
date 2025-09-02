@@ -31,6 +31,7 @@ defmodule OpenTripPlannerClient.PlanParamsTest do
     test "provides defaults", %{from: from, to: to} do
       assert %PlanParams{
                dateTime: datetime,
+               locale: "en",
                numItineraries: 5,
                wheelchair: false
              } =
@@ -64,6 +65,13 @@ defmodule OpenTripPlannerClient.PlanParamsTest do
       refute Map.has_key?(arrive_datetime, :earliestDeparture)
       refute Map.has_key?(depart_datetime, :latestArrival)
       assert {:ok, _, _} = DateTime.from_iso8601(depart_datetime.earliestDeparture)
+    end
+
+    test "sets custom locale", %{from: from, to: to} do
+      locale = Faker.Util.pick(["es", "fr", "it"])
+
+      assert %PlanParams{locale: ^locale} =
+               PlanParams.new(from, to, locale: locale)
     end
 
     test "sets custom wheelchair", %{from: from, to: to} do

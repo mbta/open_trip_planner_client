@@ -349,6 +349,7 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
         origin: build(:location_param),
         destination: build(:location_param),
         dateTime: build(:datetime_param),
+        locale: Faker.Util.pick(~w(en es it fr cn jp ko de)),
         modes: build(:modes_param),
         wheelchair: Faker.Util.pick([true, false])
       }
