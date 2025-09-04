@@ -33,6 +33,7 @@ defmodule OpenTripPlannerClient.Request do
   @spec plan_connection(PlanParams.t()) :: {:ok, Req.Response.t()} | {:error, Exception.t()}
   def plan_connection(%PlanParams{} = params) do
     new()
+    |> Req.Request.put_header("accept-language", params.locale)
     |> Req.post(graphql: {@plan_query, params})
   rescue
     error ->

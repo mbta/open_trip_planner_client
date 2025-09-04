@@ -11,6 +11,7 @@ defmodule OpenTripPlannerClient.PlanParams do
     :destination,
     :dateTime,
     :modes,
+    locale: "en",
     numItineraries: 5,
     wheelchair: false
   ]
@@ -86,16 +87,18 @@ defmodule OpenTripPlannerClient.PlanParams do
     `false`, depart at a certain time. Defalts to false.
   * `:datetime` - The DateTime to depart from the origin or arrive at the
     destination. Defaults to now.
+  * `:locale` - The locale to use for the plan, defaults to `"en"`.
   * `:modes` - The transit modes to be used in the plan. Defaults to all modes.
   * `:num_itineraries` - The maximum number of itineraries to return. Defaults
     to 5.
-  * `:wheelchair` - Whether to limit itineraries to those that are wheelchair 
+  * `:wheelchair` - Whether to limit itineraries to those that are wheelchair
     accessible. Defaults to false.
 
   """
   @type opts :: [
           arrive_by: boolean(),
           datetime: DateTime.t(),
+          locale: String.t(),
           modes: [mode_t()],
           num_itineraries: non_neg_integer(),
           wheelchair: boolean()
@@ -107,6 +110,7 @@ defmodule OpenTripPlannerClient.PlanParams do
   @type t :: %__MODULE__{
           origin: place_location_input(),
           dateTime: datetime_map(),
+          locale: String.t(),
           numItineraries: integer(),
           destination: place_location_input(),
           modes: map(),
@@ -117,19 +121,21 @@ defmodule OpenTripPlannerClient.PlanParams do
   def modes, do: @modes
 
   @doc """
-  Arguments to send to OpenTripPlanner's `plan` query. 
+  Arguments to send to OpenTripPlanner's `plan` query.
 
   Defaults to 5 itineraries departing at the current time via walking or any mode of transit.
   """
   @spec new(place_map(), place_map(), opts()) :: t()
   def new(origin, destination, opts \\ []) do
     datetime = Keyword.get(opts, :datetime, OpenTripPlannerClient.Util.local_now())
+    locale = Keyword.get(opts, :locale, "en")
     modes = Keyword.get(opts, :modes, @modes)
 
     %__MODULE__{
       origin: to_location_param(origin),
       destination: to_location_param(destination),
       dateTime: Keyword.get(opts, :arrive_by, false) |> to_datetime_param(datetime),
+      locale: locale,
       numItineraries: Keyword.get(opts, :num_itineraries, 5),
       modes: to_modes_param(modes),
       wheelchair: Keyword.get(opts, :wheelchair, false)
