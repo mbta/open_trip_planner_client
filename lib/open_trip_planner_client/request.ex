@@ -12,7 +12,7 @@ defmodule OpenTripPlannerClient.Request do
   # - Keeps automatic response body decoding, but transforms OTP's camel-case
   #   keys into snake-case
   # - Raises on HTTP 4XX/5XX responses instead of returning an :ok tuple
-  # - Configures the AbsintheClient plugin for making GraphQL requests  
+  # - Configures the AbsintheClient plugin for making GraphQL requests
   @spec new :: Req.Request.t()
   defp new do
     Req.new(
