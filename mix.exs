@@ -70,7 +70,7 @@ defmodule OpenTripPlannerClient.MixProject do
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.34", only: :dev, runtime: false},
       {:ex_machina, "~> 2.8", optional: true},
-      {:faker, "~> 0.18", optional: true},
+      {:faker, "0.19.0-alpha.1", optional: true},
       {:jason, "~> 1.4"},
       {:nestru, "~> 1.0"},
       {:req, "~> 0.5"},
