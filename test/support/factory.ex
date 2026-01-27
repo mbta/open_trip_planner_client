@@ -85,8 +85,7 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
 
     def geometry_factory do
       %Geometry{
-        points: Faker.String.base64(64),
-        length: nil
+        points: Faker.String.base64(64)
       }
     end
 
