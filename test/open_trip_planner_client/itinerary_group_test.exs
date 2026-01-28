@@ -35,10 +35,11 @@ defmodule OpenTripPlannerClient.ItineraryGroupTest do
     end
 
     test "combines interlined legs" do
+      route = build(:route)
       [a, b, c] = build_list(3, :place_with_stop)
 
-      leg_1 = build(:transit_leg, from: a, to: b)
-      leg_2 = build(:transit_leg, from: b, to: c, interline_with_previous_leg: true)
+      leg_1 = build(:transit_leg, route: route, from: a, to: b)
+      leg_2 = build(:transit_leg, route: route, from: b, to: c, interline_with_previous_leg: true)
 
       legs = [leg_1, leg_2]
 
@@ -66,12 +67,42 @@ defmodule OpenTripPlannerClient.ItineraryGroupTest do
                  (leg_2.leg_geometry.points |> Polyline.decode())
     end
 
+    test "does not combine 'interlined' legs if they're on different routes" do
+      [route_id_1, route_id_2] =
+        Faker.Util.sample_uniq(2, fn -> "mbta-ma-us:" <> Faker.Internet.slug() end)
+
+      [route_1, route_2] = [route_id_1, route_id_2] |> Enum.map(&build(:route, gtfs_id: &1))
+
+      [a, b, c] = build_list(3, :place_with_stop)
+
+      leg_1 = build(:transit_leg, route: route_1, from: a, to: b)
+
+      leg_2 =
+        build(:transit_leg, route: route_2, from: b, to: c, interline_with_previous_leg: true)
+
+      legs = [leg_1, leg_2]
+
+      itinerary = build(:itinerary, legs: legs)
+
+      [%ItineraryGroup{} = group] =
+        ItineraryGroup.groups_from_itineraries([itinerary])
+
+      assert [grouped_itinerary] = group.itineraries
+
+      assert grouped_itinerary.legs |> Enum.map(& &1.duration) ==
+               [leg_1.duration, leg_2.duration]
+    end
+
     test "combines interlined legs if they're not the first or last legs" do
+      route = build(:route)
       [a, b, c] = build_list(3, :place_with_stop)
 
       legs_before = build_list(3, :transit_leg)
-      interlined_leg_1 = build(:transit_leg, from: a, to: b)
-      interlined_leg_2 = build(:transit_leg, from: b, to: c, interline_with_previous_leg: true)
+      interlined_leg_1 = build(:transit_leg, route: route, from: a, to: b)
+
+      interlined_leg_2 =
+        build(:transit_leg, route: route, from: b, to: c, interline_with_previous_leg: true)
+
       legs_after = build_list(3, :transit_leg)
 
       legs = legs_before ++ [interlined_leg_1, interlined_leg_2] ++ legs_after
@@ -90,12 +121,18 @@ defmodule OpenTripPlannerClient.ItineraryGroupTest do
     end
 
     test "combines multiple sets of interlined legs" do
+      route = build(:route)
       [a, b, c, d, e] = build_list(5, :place_with_stop)
 
-      leg_1_a = build(:transit_leg, from: a, to: b)
-      leg_1_b = build(:transit_leg, from: b, to: c, interline_with_previous_leg: true)
-      leg_2_a = build(:transit_leg, from: c, to: d)
-      leg_2_b = build(:transit_leg, from: d, to: e, interline_with_previous_leg: true)
+      leg_1_a = build(:transit_leg, route: route, from: a, to: b)
+
+      leg_1_b =
+        build(:transit_leg, route: route, from: b, to: c, interline_with_previous_leg: true)
+
+      leg_2_a = build(:transit_leg, route: route, from: c, to: d)
+
+      leg_2_b =
+        build(:transit_leg, route: route, from: d, to: e, interline_with_previous_leg: true)
 
       legs = [leg_1_a, leg_1_b, leg_2_a, leg_2_b]
 
@@ -111,11 +148,12 @@ defmodule OpenTripPlannerClient.ItineraryGroupTest do
     end
 
     test "combines three interlined legs into one" do
+      route = build(:route)
       [a, b, c, d] = build_list(4, :place_with_stop)
 
-      leg_1 = build(:transit_leg, from: a, to: b)
-      leg_2 = build(:transit_leg, from: b, to: c, interline_with_previous_leg: true)
-      leg_3 = build(:transit_leg, from: c, to: d, interline_with_previous_leg: true)
+      leg_1 = build(:transit_leg, route: route, from: a, to: b)
+      leg_2 = build(:transit_leg, route: route, from: b, to: c, interline_with_previous_leg: true)
+      leg_3 = build(:transit_leg, route: route, from: c, to: d, interline_with_previous_leg: true)
 
       legs = [leg_1, leg_2, leg_3]
 

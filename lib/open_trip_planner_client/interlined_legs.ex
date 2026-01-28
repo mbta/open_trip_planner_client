@@ -3,13 +3,15 @@ defmodule OpenTripPlannerClient.InterlinedLegs do
   A little utility module for combining interlined legs together into a single leg.
   """
 
-  alias OpenTripPlannerClient.Schema.{Geometry, IntermediateStop, Leg}
+  alias OpenTripPlannerClient.Schema.{Geometry, IntermediateStop, Leg, Route}
 
   @spec merge([Leg.t()]) :: [Leg.t()]
   def merge([
-        %Leg{} = leg_1,
-        %Leg{interline_with_previous_leg: true} = leg_2 | remaining_legs
-      ]),
+        %Leg{route: %Route{gtfs_id: route_id_1}} = leg_1,
+        %Leg{route: %Route{gtfs_id: route_id_2}, interline_with_previous_leg: true} = leg_2
+        | remaining_legs
+      ])
+      when route_id_1 == route_id_2,
       do:
         [combine_legs(leg_1, leg_2) | remaining_legs]
         |> merge()
