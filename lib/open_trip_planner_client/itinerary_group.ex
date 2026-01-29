@@ -6,7 +6,7 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
   But, this does not include walking legs that are less than 0.2 miles.
   """
 
-  alias OpenTripPlannerClient.ItineraryTag
+  alias OpenTripPlannerClient.{InterlinedLegs, ItineraryTag}
   alias OpenTripPlannerClient.Schema.{Itinerary, Leg}
 
   @type t :: %__MODULE__{
@@ -76,9 +76,14 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
 
   defp to_groups(itineraries, opts) do
     itineraries
+    |> Enum.map(&merge_interlined_legs/1)
     |> Enum.group_by(&Itinerary.group_identifier/1)
     |> Enum.map(&to_group(&1, opts))
     |> Enum.sort_by(&tag_and_cost_sorter/1)
+  end
+
+  defp merge_interlined_legs(%Itinerary{legs: legs} = itinerary) do
+    %Itinerary{itinerary | legs: legs |> InterlinedLegs.merge()}
   end
 
   defp all_mbta_bus_legs?(group) do

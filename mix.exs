@@ -73,6 +73,7 @@ defmodule OpenTripPlannerClient.MixProject do
       {:faker, "0.19.0-alpha.1", optional: true},
       {:jason, "~> 1.4"},
       {:nestru, "~> 1.0"},
+      {:polyline, "~> 1.6"},
       {:req, "~> 0.5"},
       {:timex, "~> 3.0"},
       {:typed_struct, "~> 0.3.0"}
