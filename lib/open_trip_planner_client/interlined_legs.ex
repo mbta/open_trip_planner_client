@@ -30,7 +30,12 @@ defmodule OpenTripPlannerClient.InterlinedLegs do
         distance: leg_1.distance + leg_2.distance,
         intermediate_stops:
           leg_1.intermediate_stops ++
-            [%IntermediateStop{name: leg_1.to.name}] ++
+            [
+              %IntermediateStop{
+                gtfs_id: leg_1.to.stop && leg_1.to.stop.gtfs_id,
+                name: leg_1.to.name
+              }
+            ] ++
             leg_2.intermediate_stops,
         leg_geometry: combine_geometries(leg_1.leg_geometry, leg_2.leg_geometry)
     }

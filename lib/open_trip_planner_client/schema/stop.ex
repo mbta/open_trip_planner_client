@@ -83,6 +83,7 @@ defmodule OpenTripPlannerClient.Schema.IntermediateStop do
 
   @derive Nestru.Decoder
   schema do
+    field(:gtfs_id, gtfs_id(), @nonnull_field)
     field(:name, String.t())
   end
 end

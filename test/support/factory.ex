@@ -313,7 +313,10 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
     end
 
     def intermediate_stop_factory do
+      prefix = gtfs_prefix()
+
       %IntermediateStop{
+        gtfs_id: prefix <> Faker.Internet.slug(),
         name: Faker.Address.city()
       }
     end
