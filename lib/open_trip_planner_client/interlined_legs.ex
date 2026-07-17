@@ -21,7 +21,7 @@ defmodule OpenTripPlannerClient.InterlinedLegs do
 
   def merge([]), do: []
 
-  defp combine_legs(leg_1, leg_2) do
+  defp combine_legs(%Leg{} = leg_1, %Leg{} = leg_2) do
     %Leg{
       leg_1
       | to: leg_2.to,
