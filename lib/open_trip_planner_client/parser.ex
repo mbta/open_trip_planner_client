@@ -64,10 +64,12 @@ defmodule OpenTripPlannerClient.Parser do
     {:ok, %Plan{routing_errors: [], itineraries: []}}
   end
 
-  defp simplify_plan(plan) do
+  defp simplify_plan(%Plan{} = plan) do
     plan
     |> drop_nonfatal_errors()
-    |> then(&%Plan{&1 | itineraries: simplify_itineraries(&1.itineraries)})
+    |> then(fn %Plan{} = plan ->
+      %Plan{plan | itineraries: simplify_itineraries(plan.itineraries)}
+    end)
     |> validate_no_routing_errors()
   end
 
@@ -76,7 +78,7 @@ defmodule OpenTripPlannerClient.Parser do
   defp validate_no_routing_errors(%Plan{routing_errors: []} = plan), do: {:ok, plan}
   defp validate_no_routing_errors(plan), do: {:error, plan}
 
-  defp drop_nonfatal_errors(plan) do
+  defp drop_nonfatal_errors(%Plan{} = plan) do
     plan.routing_errors
     |> Enum.reject(&(&1.code == @walking_better_than_transit))
     |> then(&%Plan{plan | routing_errors: &1})

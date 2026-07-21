@@ -129,7 +129,7 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
 
   defp mark_unavailable(groups) do
     groups
-    |> Enum.map(fn group ->
+    |> Enum.map(fn %__MODULE__{} = group ->
       %__MODULE__{group | available?: false}
     end)
   end
