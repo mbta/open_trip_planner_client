@@ -65,6 +65,19 @@ fragment PlanInfo on PlanConnection {
         end {
           ...TimeInfo
         }
+        fareProducts {
+          product {
+            ... on DefaultFareProduct {
+              medium {
+                name
+              }
+              name
+              price {
+                amount
+              }
+            }
+          }
+        }
         from {
           ...PlaceInfo
         }
