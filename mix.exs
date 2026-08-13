@@ -26,8 +26,8 @@ defmodule OpenTripPlannerClient.MixProject do
 
       # Docs
       name: "OpenTripPlanner MBTA Client",
-      source_url: "https://github.com/thecristen/open_trip_planner_client",
-      homepage_url: "https://thecristen.github.io/open_trip_planner_client",
+      source_url: "https://github.com/mbta/open_trip_planner_client",
+      homepage_url: "https://mbta.github.io/open_trip_planner_client",
       docs: [
         main: "readme",
         extras: ["README.md"],
