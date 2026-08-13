@@ -13,6 +13,7 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
 
     alias OpenTripPlannerClient.Schema.{
       Agency,
+      FareProduct,
       Geometry,
       IntermediateStop,
       Itinerary,
@@ -80,6 +81,14 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
     def agency_factory do
       %Agency{
         name: Faker.Util.pick(["MBTA", "Massport", "Logan Express"])
+      }
+    end
+
+    def fare_product_factory do
+      %FareProduct{
+        medium_name: Faker.String.base64(8),
+        name: Faker.Company.name(),
+        usd_price: Faker.random_between(100, 1000) |> div(100)
       }
     end
 
@@ -189,6 +198,7 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
         distance: random_distance(),
         duration: duration,
         end: end_time,
+        fare_products: [],
         from: build(:place),
         interline_with_previous_leg: false,
         intermediate_stops: [],
