@@ -7,56 +7,40 @@ query TripPlan(
   $numItineraries: Int
 ) {
   actualPlan: planConnection(
-    origin: $origin,
-    destination: $destination,
-    dateTime: $dateTime,
+    origin: $origin
+    destination: $destination
+    dateTime: $dateTime
     preferences: {
-      accessibility: {
-        wheelchair: {
-          enabled: $wheelchair
-        }
-      },
-      street: {
-        walk: {
-          reluctance: 5.0
-        }
-      },
+      accessibility: { wheelchair: { enabled: $wheelchair } }
+      street: { walk: { reluctance: 5.0 } }
       transit: {
-        filters: [
-          { exclude: [{ agencies: ["mbta-ma-us-initial:1"] }]}
-        ]
+        filters: [{ exclude: [{ agencies: ["mbta-ma-us-initial:1"] }] }]
       }
-    },
-    modes: $modes,
+    }
+    modes: $modes
     searchWindow: "2h"
     first: $numItineraries
-  ) { ...PlanInfo }
+  ) {
+    ...PlanInfo
+  }
 
   idealPlan: planConnection(
-    origin: $origin,
-    destination: $destination,
-    dateTime: $dateTime,
+    origin: $origin
+    destination: $destination
+    dateTime: $dateTime
     preferences: {
-      accessibility: {
-        wheelchair: {
-          enabled: $wheelchair
-        }
-      },
-      street: {
-        walk: {
-          reluctance: 5.0
-        }
-      },
+      accessibility: { wheelchair: { enabled: $wheelchair } }
+      street: { walk: { reluctance: 5.0 } }
       transit: {
-        filters: [
-          { include: [{ agencies: ["mbta-ma-us-initial:1"] }]}
-        ]
+        filters: [{ include: [{ agencies: ["mbta-ma-us-initial:1"] }] }]
       }
-    },
-    modes: $modes,
+    }
+    modes: $modes
     searchWindow: "2h"
     first: $numItineraries
-  ) { ...PlanInfo }
+  ) {
+    ...PlanInfo
+  }
 }
 
 fragment PlanInfo on PlanConnection {
@@ -73,23 +57,33 @@ fragment PlanInfo on PlanConnection {
       end
       generalizedCost
       legs {
-        agency { name }
-        distance
-        duration
-        end { ...TimeInfo }
-        from { ...PlaceInfo }
-        headsign
-        interlineWithPreviousLeg
-        intermediateStops { 
-          gtfsId,
+        agency {
           name
         }
-        legGeometry { points }
+        distance
+        duration
+        end {
+          ...TimeInfo
+        }
+        from {
+          ...PlaceInfo
+        }
+        headsign
+        interlineWithPreviousLeg
+        intermediateStops {
+          gtfsId
+          name
+        }
+        legGeometry {
+          points
+        }
         mode
         realTime
         realtimeState
-        route { 
-          agency { name }
+        route {
+          agency {
+            name
+          }
           gtfsId
           shortName
           longName
@@ -100,14 +94,18 @@ fragment PlanInfo on PlanConnection {
           sortOrder
           mode
         }
-        start { ...TimeInfo }
+        start {
+          ...TimeInfo
+        }
         steps {
           distance
           streetName
           absoluteDirection
           relativeDirection
         }
-        to { ...PlaceInfo }
+        to {
+          ...PlaceInfo
+        }
         transitLeg
         trip {
           directionId
@@ -127,8 +125,8 @@ fragment PlaceInfo on Place {
   name
   lat
   lon
-  stop { 
-    gtfsId, 
+  stop {
+    gtfsId
     name
     url
     vehicleMode
