@@ -68,10 +68,16 @@ fragment PlanInfo on PlanConnection {
         fareProducts {
           product {
             ... on DefaultFareProduct {
-              medium {
-                name
+              ...FareMediumNameInfo
+              price {
+                amount
               }
-              name
+            }
+            ... on DependentFareProduct {
+              dependencies {
+                ...FareMediumNameInfo
+              }
+              ...FareMediumNameInfo
               price {
                 amount
               }
@@ -157,4 +163,12 @@ fragment TimeInfo on LegTime {
     time
     delay
   }
+}
+
+fragment FareMediumNameInfo on FareProduct {
+  id
+  medium {
+    name
+  }
+  name
 }

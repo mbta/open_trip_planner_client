@@ -86,6 +86,7 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
 
     def fare_product_factory do
       %FareProduct{
+        id: Faker.String.base64(8),
         medium_name: Faker.String.base64(8),
         name: Faker.Company.name(),
         usd_price: Faker.random_between(100, 1000) |> div(100)
