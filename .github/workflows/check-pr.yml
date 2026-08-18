@@ -56,7 +56,7 @@ jobs:
       - run: mix dialyzer
 
   zizmor:
-    name: Security / Zizmor
+    name: security / zizmor
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
