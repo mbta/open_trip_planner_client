@@ -89,7 +89,7 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
         id: Faker.String.base64(8),
         medium_name: Faker.String.base64(8),
         name: Faker.Company.name(),
-        usd_price: Faker.random_between(100, 1000) |> div(100)
+        us_cents: Faker.random_between(100, 1000)
       }
     end
 
