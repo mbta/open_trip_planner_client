@@ -25,7 +25,7 @@ defmodule OpenTripPlannerClient.Schema.FareProduct do
     defp replace_nil_with_list(other), do: other
 
     defp to_cents(amount) when is_float(amount) do
-      trunc(amount * 100)
+      round(amount * 100)
     end
 
     defp to_cents(_), do: nil
