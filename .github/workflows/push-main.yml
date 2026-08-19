@@ -67,14 +67,17 @@ jobs:
       - name: Create Release
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
         if: steps.tag.outputs.name
+        env:
+          TAG_NAME: ${{ steps.tag.outputs.name }}
+          TARGET_SHA: ${{ github.sha }}
         with:
           script: |
             const { owner, repo } = context.repo
             await github.rest.repos.createRelease({
               owner,
               repo,
-              tag_name: "${{ steps.tag.outputs.name }}",
-              target_commitish: "${{ github.sha }}",
+              tag_name: `${TAG_NAME}`,
+              target_commitish: `${TARGET_SHA}`,
               draft: false,
               prerelease: false,
               generate_release_notes: true
