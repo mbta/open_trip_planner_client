@@ -44,7 +44,7 @@ the timezone matches that configured in the OpenTripPlanner instance.
 ### OpenTripPlanner requirements
 
 The OpenTripPlanner instance needs to be version 2, with the GraphQL API
-enabled. 
+enabled.
 
 If using the
 [`transitModelTimeZone`](https://docs.opentripplanner.org/en/v2.4.0/BuildConfiguration/?h=timezone#transitModelTimeZone)
@@ -123,6 +123,25 @@ The returned itineraries include an extra field, `"tag"`, which will contain the
 
 ```elixir
 [:shortest_trip, :least_walking, nil] = Enum.map(itineraries, &Map.get(&1, "tag"))
+```
+
+## Zizmor
+
+We use [Zizmor](https://docs.zizmor.sh/) to ensure that our Github Actions are configured securely. It runs automatically in CI, but if you'd like to run it locally, you can install it with
+
+```bash
+brew install zizmor
+zizmor .
+```
+
+If you have Github CLI tools installed (`brew install gh`), and are logged in (`gh auth login`), then you can get more informative output by running in "Online Mode":
+```bash
+zizmor --gh-token $(gh auth token) .
+```
+
+And you can have it auto-fix what it can with
+```bash
+zizmor --gh-token $(gh auth token) --pedantic --fix=all .
 ```
 
 ## License
