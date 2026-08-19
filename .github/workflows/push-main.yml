@@ -7,13 +7,13 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 jobs:
   build:
     name: Test & Build docs
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
@@ -29,7 +29,7 @@ jobs:
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:
           path: ./docs
- 
+
   deploy:
     concurrency:
       group: "pages"
@@ -38,6 +38,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+      id-token: write
     needs: build
     steps:
       - name: Deploy to GitHub Pages

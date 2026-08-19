@@ -3,6 +3,8 @@ name: Check PR for problems
 on:
   pull_request:
 
+permissions: {}
+
 jobs:
   # first job to populate the cache with dependencies
   # the rest of the jobs will run in parallel using the cached dependencies

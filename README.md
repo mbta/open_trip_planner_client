@@ -136,12 +136,12 @@ zizmor .
 
 If you have Github CLI tools installed (`brew install gh`), and are logged in (`gh auth login`), then you can get more informative output by running in "Online Mode":
 ```bash
-zizmor --gh-token $(gh auth token))
+zizmor --gh-token $(gh auth token) .
 ```
 
 And you can have it auto-fix what it can with
 ```bash
-zizmor --gh-token $(gh auth token)) --pedantic --fix=all
+zizmor --gh-token $(gh auth token) --pedantic --fix=all .
 ```
 
 ## License
