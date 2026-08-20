@@ -13,8 +13,10 @@ defmodule OpenTripPlannerClient.Schema.Leg do
 
   alias OpenTripPlannerClient.Schema.{
     Agency,
+    FareProduct,
     Geometry,
     IntermediateStop,
+    Leg,
     LegTime,
     Place,
     Route,
@@ -59,11 +61,12 @@ defmodule OpenTripPlannerClient.Schema.Leg do
             |> Code.string_to_quoted!()
           )
 
-  defimpl Nestru.PreDecoder do
+  defimpl Nestru.PreDecoder, for: Leg do
     # credo:disable-for-next-line
     def gather_fields_for_decoding(_, _, map) do
       updated_map =
         map
+        |> update_in(["fare_products"], &replace_nil_with_list/1)
         |> update_in(["intermediate_stops"], &replace_nil_with_list/1)
         |> update_in(["steps"], &replace_nil_with_list/1)
 
@@ -78,6 +81,7 @@ defmodule OpenTripPlannerClient.Schema.Leg do
            hint: %{
              agency: Agency,
              end: LegTime,
+             fare_products: [FareProduct],
              from: Place,
              intermediate_stops: [IntermediateStop],
              leg_geometry: Geometry,
@@ -94,6 +98,7 @@ defmodule OpenTripPlannerClient.Schema.Leg do
     field(:distance, distance_meters())
     field(:duration, duration_seconds())
     field(:end, LegTime.t(), @nonnull_field)
+    field(:fare_products, [FareProduct.t()])
     field(:from, Place.t(), @nonnull_field)
     field(:headsign, String.t())
     field(:interline_with_previous_leg, boolean())

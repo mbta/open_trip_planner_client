@@ -28,8 +28,8 @@ defmodule OpenTripPlannerClient.Parser do
   """
   @spec validate_body(map()) :: {:ok, QueryResult.t()} | {:error, term()}
 
-  def validate_body(%{"errors" => [graphql_error | _]}) do
-    raise GraphQLError, graphql_error
+  def validate_body(%{"errors" => _} = errors) do
+    raise GraphQLError, errors
   end
 
   def validate_body(%{"data" => data}) do
