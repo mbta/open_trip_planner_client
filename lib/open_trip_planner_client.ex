@@ -12,9 +12,20 @@ defmodule OpenTripPlannerClient do
   """
   @behaviour OpenTripPlannerClient.Behaviour
 
-  import OpenTripPlannerClient.Request, only: [plan_connection: 1]
+  import OpenTripPlannerClient.Request, only: [health: 0, plan_connection: 1]
 
   alias OpenTripPlannerClient.{ItineraryGroup, ItineraryTag, Parser, QueryResult}
+
+  @impl OpenTripPlannerClient.Behaviour
+  @doc """
+  Check whether the configured OpenTripPlanner instance is healthy.
+  """
+  def healthy? do
+    case health() do
+      {:ok, %Req.Response{status: status}} when status in 200..399 -> true
+      _ -> false
+    end
+  end
 
   @impl OpenTripPlannerClient.Behaviour
   @doc """

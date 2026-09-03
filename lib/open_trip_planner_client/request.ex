@@ -38,6 +38,21 @@ defmodule OpenTripPlannerClient.Request do
       handle_exception(error, params: inspect(params))
   end
 
+  @doc """
+  The health endpoints returns an 200 OK status code once the graph is loaded
+  and all updaters are ready. Otherwise, a 404 NOT FOUND is returned.
+  https://docs.opentripplanner.org/en/latest/sandbox/ActuatorAPI
+  """
+  @spec health :: {:ok, Req.Response.t()} | {:error, Exception.t()}
+  def health do
+    Req.head(
+      Application.fetch_env!(:open_trip_planner_client, :otp_url) <>
+        "/otp/actuators/health",
+      redirect: false,
+      retry: false
+    )
+  end
+
   defp handle_exception(error, metadata) do
     error
     |> Exception.message()
