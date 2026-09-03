@@ -90,6 +90,28 @@ defmodule OpenTripPlannerClient.HttpTest do
     end
   end
 
+  describe "healthy?/0" do
+    for status <- [200, 302] do
+      test "returns true for a #{status} response", %{bypass: bypass} do
+        Bypass.expect_once(bypass, "HEAD", "/otp/actuators/health", fn conn ->
+          send_resp(conn, unquote(status), "")
+        end)
+
+        assert healthy?()
+      end
+    end
+
+    for status <- [404, 500] do
+      test "returns false for a #{status} response", %{bypass: bypass} do
+        Bypass.expect_once(bypass, "HEAD", "/otp/actuators/health", fn conn ->
+          send_resp(conn, unquote(status), "")
+        end)
+
+        refute healthy?()
+      end
+    end
+  end
+
   describe "error handling/logging" do
     @tag :capture_log
     test "HTTP errors are converted to error tuples", %{bypass: bypass} do

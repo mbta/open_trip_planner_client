@@ -9,6 +9,7 @@ defmodule OpenTripPlannerClient.Behaviour do
 
   @type plan_result ::
           {:ok, [OpenTripPlannerClient.ItineraryGroup.t()]} | {:error, term()}
+  @callback healthy?() :: boolean()
   @callback plan(params :: PlanParams.t()) :: plan_result()
   @callback plan(
               params :: PlanParams.t(),
