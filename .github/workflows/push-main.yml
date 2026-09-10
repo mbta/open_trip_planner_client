@@ -40,6 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
+      pages: write
     needs: build
     steps:
       - name: Deploy to GitHub Pages
@@ -59,7 +60,7 @@ jobs:
       - name: Parse release tag name
         id: tag
         env:
-            COMMIT_MSG: ${{ github.event.head_commit.message }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
         run: |
           if [[ "${COMMIT_MSG}" =~ (v[0-9]+\.[0-9]+\.[0-9]+) ]]; then
             printf 'name=%s\n' "${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
