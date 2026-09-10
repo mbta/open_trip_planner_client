@@ -60,9 +60,9 @@ jobs:
         id: tag
         env:
             COMMIT_MSG: ${{ github.event.head_commit.message }}
-        run:
-          if [[ "${COMMIT_MSG}" =~ (v[0-9]+.[0-9]+.[0-9]+) ]]; then
-            echo "name=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT;
+        run: |
+          if [[ "${COMMIT_MSG}" =~ (v[0-9]+\.[0-9]+\.[0-9]+) ]]; then
+            printf 'name=%s\n' "${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
           fi
       - name: Create Release
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
