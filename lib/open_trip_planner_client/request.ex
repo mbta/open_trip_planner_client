@@ -19,7 +19,7 @@ defmodule OpenTripPlannerClient.Request do
       base_url:
         Application.fetch_env!(:open_trip_planner_client, :otp_url) <>
           "/otp/routers/default/index/",
-      decode_json: [keys: &Macro.underscore/1],
+      decoders: [json: fn binary -> Jason.decode(binary, keys: &Macro.underscore/1) end],
       http_errors: :raise
     )
     |> AbsintheClient.attach()
