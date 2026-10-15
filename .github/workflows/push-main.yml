@@ -77,8 +77,8 @@ jobs:
             await github.rest.repos.createRelease({
               owner,
               repo,
-              tag_name: `${TAG_NAME}`,
-              target_commitish: `${TARGET_SHA}`,
+              tag_name: `${process.env.TAG_NAME}`,
+              target_commitish: `${process.env.TARGET_SHA}`,
               draft: false,
               prerelease: false,
               generate_release_notes: true
