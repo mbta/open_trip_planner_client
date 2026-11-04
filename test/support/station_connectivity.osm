@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="station-connectivity-test">
+  <node id="1" lat="42.5249" lon="-71.108294" version="1"/>
+  <node id="2" lat="42.5250" lon="-71.108294" version="1"/>
+  <node id="3" lat="42.5195" lon="-71.108294" version="1"/>
+  <node id="4" lat="42.5194" lon="-71.108294" version="1"/>
+  <node id="5" lat="42.52221" lon="-71.1046" version="1"/>
+  <node id="6" lat="42.52221" lon="-71.1045" version="1"/>
+  <node id="7" lat="42.52221" lon="-71.1119" version="1"/>
+  <node id="8" lat="42.52221" lon="-71.1120" version="1"/>
+  <node id="9" lat="42.5203" lon="-71.1109" version="1"/>
+  <node id="10" lat="42.5202" lon="-71.1110" version="1"/>
+  <way id="1" version="1">
+    <nd ref="1"/><nd ref="2"/>
+    <tag k="highway" v="residential"/>
+  </way>
+  <way id="2" version="1">
+    <nd ref="3"/><nd ref="4"/>
+    <tag k="highway" v="footway"/>
+  </way>
+  <way id="3" version="1">
+    <nd ref="5"/><nd ref="6"/>
+    <tag k="highway" v="tertiary"/>
+  </way>
+  <way id="4" version="1">
+    <nd ref="7"/><nd ref="8"/>
+    <tag k="highway" v="footway"/>
+    <tag k="railway" v="platform"/>
+  </way>
+  <way id="5" version="1">
+    <nd ref="9"/><nd ref="10"/>
+    <tag k="highway" v="service"/>
+    <tag k="access" v="private"/>
+  </way>
+</osm>

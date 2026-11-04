@@ -1,0 +1,5 @@
+stop_id,stop_name,stop_lat,stop_lon,location_type,parent_station
+station,Example Station,42.52221,-71.108294,1,
+platform,Example Platform,42.52221,-71.108294,0,station
+entrance,Example Entrance,42.52200,-71.108000,2,station
+bus,Standalone Bus Stop,42.521793,-71.107921,0,
