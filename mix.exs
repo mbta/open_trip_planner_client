@@ -64,7 +64,7 @@ defmodule OpenTripPlannerClient.MixProject do
 
   defp deps do
     [
-      {:absinthe_client, "~> 0.1.1"},
+      {:absinthe_client, "~> 0.1"},
       {:bypass, "~> 2.1", only: :test},
       {:credo, "~> 1.7", only: [:dev, :test]},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
