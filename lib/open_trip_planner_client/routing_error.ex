@@ -8,6 +8,7 @@ defmodule OpenTripPlannerClient.Plan.RoutingError do
   alias OpenTripPlannerClient.Plan.RoutingError
 
   @routing_error_codes [
+    :NO_DIRECT_MODE_CONNECTION,
     :NO_TRANSIT_CONNECTION,
     :NO_TRANSIT_CONNECTION_IN_SEARCH_WINDOW,
     :OUTSIDE_SERVICE_PERIOD,
@@ -19,7 +20,12 @@ defmodule OpenTripPlannerClient.Plan.RoutingError do
 
   @typedoc """
   Corresponds to `RoutingErrorCode` from OTP `planConnection` query.
-  Possible values as of OTPv2.7.0:
+  Possible values as of OTPv2.10.0:
+
+  * `NO_DIRECT_MODE_CONNECTION`: No usable itineraries were found for the
+  requested direct mode (e.g. walking, cycling, car, flex) and no transit modes
+  were included in the search. This is returned both when no route exists and
+  when routes were found but didn't pass quality filters.
 
   * `NO_TRANSIT_CONNECTION`: No transit connection was found between the origin
   and destination within the operating day or the next day, not even sub-optimal

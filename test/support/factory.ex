@@ -60,6 +60,7 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
       %{
         code:
           Faker.Util.pick([
+            :NO_DIRECT_MODE_CONNECTION,
             :NO_TRANSIT_CONNECTION,
             :NO_TRANSIT_CONNECTION_IN_SEARCH_WINDOW,
             :OUTSIDE_SERVICE_PERIOD,
