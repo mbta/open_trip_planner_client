@@ -186,8 +186,7 @@ defmodule OpenTripPlannerClient.Schema.Leg do
   @spec summary(__MODULE__.t()) :: leg_summary()
   def summary(%__MODULE__{duration: duration, transit_leg: false}) do
     minutes =
-      duration
-      |> Timex.Duration.to_minutes(:seconds)
+      (duration / 60)
       |> Kernel.round()
       |> Kernel.max(1)
 
