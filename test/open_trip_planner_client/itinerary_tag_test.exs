@@ -103,8 +103,8 @@ defmodule OpenTripPlannerClient.ItineraryTagTest do
 
   test "sort_tagged/2 supports sort by end time" do
     end_dt = Faker.DateTime.forward(1)
-    end_dt1 = Timex.shift(end_dt, hours: 1)
-    end_dt2 = Timex.shift(end_dt, hours: 2)
+    end_dt1 = DateTime.shift(end_dt, hour: 1)
+    end_dt2 = DateTime.shift(end_dt, hour: 2)
 
     itineraries = [
       build(:itinerary, %{end: end_dt})
