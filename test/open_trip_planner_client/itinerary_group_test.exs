@@ -483,44 +483,4 @@ defmodule OpenTripPlannerClient.ItineraryGroupTest do
       assert all_times == Enum.map(group.itineraries, &Map.get(&1, group.time_key))
     end
   end
-
-  describe "alternatives_text/1" do
-    test "nil when no itinerary alternatives" do
-      group = build(:itinerary_group, itineraries: build_list(1, :itinerary))
-      refute ItineraryGroup.alternatives_text(group)
-    end
-
-    @tag flaky: "Sometimes multiple generated itineraries happen to have the same time!"
-    test "doesn't include representative_itinerary details" do
-      group = build(:itinerary_group)
-
-      representative_time =
-        group
-        |> ItineraryGroup.representative_itinerary()
-        |> Map.get(group.time_key)
-        |> Timex.format!("%-I:%M", :strftime)
-
-      refute ItineraryGroup.alternatives_text(group) =~ representative_time
-    end
-
-    test "changes based on group time_key" do
-      depart_group = build(:itinerary_group, time_key: :start)
-      arrive_group = %{depart_group | time_key: :end}
-      depart_alternatives = ItineraryGroup.alternatives_text(depart_group)
-      arrive_alternatives = ItineraryGroup.alternatives_text(arrive_group)
-      refute depart_alternatives == arrive_alternatives
-      assert depart_alternatives =~ "Similar trips depart at"
-      assert arrive_alternatives =~ "Similar trips arrive at"
-    end
-
-    test "changes on number of alternate times" do
-      group = build(:itinerary_group, time_key: :start, representative_index: 0)
-      smaller_group = %{group | itineraries: Enum.take(group.itineraries, 2)}
-      alternatives = ItineraryGroup.alternatives_text(group)
-      smaller_alternatives = ItineraryGroup.alternatives_text(smaller_group)
-      refute alternatives == smaller_alternatives
-      assert alternatives =~ "Similar trips depart at"
-      assert smaller_alternatives =~ "Similar trip departs at"
-    end
-  end
 end

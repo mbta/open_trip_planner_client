@@ -208,35 +208,4 @@ defmodule OpenTripPlannerClient.ItineraryGroup do
   def all_times(%__MODULE__{itineraries: itineraries, time_key: time_key}) do
     Enum.map(itineraries, &Map.get(&1, time_key))
   end
-
-  @doc """
-  Formatted list of times arriving or departing.
-  """
-  @spec alternatives_text(__MODULE__.t()) :: String.t() | nil
-  @spec alternatives_text([DateTime.t()], :start | :end) :: String.t() | nil
-  def alternatives_text(
-        %__MODULE__{representative_index: representative_index, time_key: time_key} =
-          itinerary_group
-      ) do
-    itinerary_group
-    |> all_times()
-    |> List.delete_at(representative_index)
-    |> alternatives_text(time_key)
-  end
-
-  @doc """
-  Formatted list of times arriving or departing.
-  """
-  @spec alternatives_text([DateTime.t()], :start | :end) :: String.t() | nil
-  def alternatives_text([], _), do: nil
-  def alternatives_text([time], :start), do: "Similar trip departs at #{time(time)}"
-  def alternatives_text([time], :end), do: "Similar trip arrives at #{time(time)}"
-
-  def alternatives_text(times, :start),
-    do: "Similar trips depart at #{Enum.map_join(times, ", ", &time/1)}"
-
-  def alternatives_text(times, :end),
-    do: "Similar trips arrive at #{Enum.map_join(times, ", ", &time/1)}"
-
-  defp time(time), do: Timex.format!(time, "%-I:%M", :strftime)
 end
