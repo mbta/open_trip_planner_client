@@ -38,7 +38,7 @@ The library expects a URL to a running instance of OpenTripPlanner, and a
 timezone name that's used to parse and format input `DateTime`s into the correct
 strings for input into OpenTripPlanner. Valid timezone names are from the Olson
 database; valid values can be found using
-[`Timex.timezones/0`](https://hexdocs.pm/timex/Timex.html#timezones/0). Ideally
+[`Tzdata.zone_list/0`](https://hexdocs.pm/tzdata/Tzdata.html#zone_list/0). Ideally
 the timezone matches that configured in the OpenTripPlanner instance.
 
 ### OpenTripPlanner requirements
