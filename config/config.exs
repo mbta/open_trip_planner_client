@@ -6,6 +6,8 @@ config :open_trip_planner_client,
   timezone: "America/New_York",
   fallback_error_message: "Something went wrong."
 
+config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
+
 config :logger, :default_formatter,
   format: "[$level] $message $metadata\n",
   metadata: [:mfa, :error_code, :file, :line, :crash_reason]

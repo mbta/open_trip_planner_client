@@ -75,8 +75,8 @@ defmodule OpenTripPlannerClient.MixProject do
       {:nestru, "~> 1.0"},
       {:polyline, "~> 1.6"},
       {:req, "~> 0.5"},
-      {:timex, "~> 3.0"},
-      {:typed_struct, "~> 0.3.0"}
+      {:typed_struct, "~> 0.3.0"},
+      {:tzdata, "~> 1.0"}
     ]
   end
 end

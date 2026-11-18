@@ -141,7 +141,7 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
     # Build a bunch of legs such that their start/end times follow each other
     # (e.g. creating a coherent sequence)
     defp build_leg_sequence(number) do
-      base_time = Timex.now("America/New_York")
+      base_time = DateTime.utc_now()
 
       transit_legs =
         0..number
@@ -150,7 +150,7 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
             start:
               sequence(:leg_start, fn _ ->
                 build(:leg_time, %{
-                  scheduled_time: Timex.shift(base_time, minutes: (index + 1) * 10)
+                  scheduled_time: DateTime.shift(base_time, minute: (index + 1) * 10)
                 })
               end)
           })
@@ -167,7 +167,7 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
             }),
           start:
             build(:leg_time, %{
-              scheduled_time: Timex.shift(transit_start_time, minutes: -random_seconds())
+              scheduled_time: DateTime.shift(transit_start_time, minute: -random_seconds())
             })
         })
 
@@ -192,7 +192,7 @@ if Code.ensure_loaded?(ExMachina) and Code.ensure_loaded?(Faker) do
 
       end_time =
         build(:leg_time, %{
-          scheduled_time: Timex.shift(start_time.scheduled_time, seconds: duration)
+          scheduled_time: DateTime.shift(start_time.scheduled_time, second: duration)
         })
 
       leg = %Leg{

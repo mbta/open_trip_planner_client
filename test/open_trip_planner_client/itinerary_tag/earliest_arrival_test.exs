@@ -7,7 +7,7 @@ defmodule OpenTripPlannerClient.ItineraryTag.EarliestArrivalTest do
 
   test "tags, sorts" do
     end_dt = Faker.DateTime.backward(4)
-    later_dt = Timex.shift(end_dt, minutes: 11)
+    later_dt = DateTime.shift(end_dt, minute: 11)
 
     itineraries = [
       build(:itinerary, %{
